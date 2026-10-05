@@ -28,7 +28,6 @@ require_once($CFG->libdir . '/adminlib.php');
 $type = required_param('type', PARAM_ALPHA);
 $types = [
     'videoprogresssource' => [
-        'section' => 'local_video_bridge_sourceplugins',
         'title' => 'subplugintype_videoprogresssource_plural',
         'description' => 'sources_desc',
     ],
@@ -39,7 +38,10 @@ if (!isset($types[$type])) {
 }
 
 require_admin();
-admin_externalpage_setup($types[$type]['section']);
+
+$PAGE->set_context(context_system::instance());
+$PAGE->set_url(new moodle_url('/local/video_bridge/admin_plugins.php', ['type' => $type]));
+$PAGE->set_pagelayout('admin');
 
 $pluginmanager = core_plugin_manager::instance();
 $plugins = [];
