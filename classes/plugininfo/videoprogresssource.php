@@ -59,7 +59,9 @@ class videoprogresssource extends base {
      * @return moodle_url Management URL.
      */
     public static function get_manage_url(): moodle_url {
-        return new moodle_url('/admin/settings.php', ['section' => 'local_video_bridge']);
+        return new moodle_url('/local/video_bridge/admin_plugins.php', [
+            'type' => 'videoprogresssource',
+        ]);
     }
 
     /**
