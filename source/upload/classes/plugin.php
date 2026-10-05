@@ -118,8 +118,7 @@ class plugin extends plugin_base {
      */
     public function prepare_form_data(array &$defaultvalues, context_module $context): void {
         $draftitemid = file_get_submitted_draft_itemid("videofile");
-        $component = $this->get_storage_component($context);
-        file_prepare_draft_area($draftitemid, $context->id, $component, "video", 0, [
+        file_prepare_draft_area($draftitemid, $context->id, "local_video_bridge", "video", 0, [
             "subdirs" => 0,
             "maxfiles" => 1,
         ]);
@@ -143,7 +142,6 @@ class plugin extends plugin_base {
             "maxfiles" => 1,
             "accepted_types" => ['.mp4', '.webm', '.ogv', '.m4v', '.mov', '.m3u8'],
         ]);
-        get_file_storage()->delete_area_files($context->id, "mod_videoprogress", "video", 0);
     }
 
     /**
@@ -153,9 +151,7 @@ class plugin extends plugin_base {
      * @return void
      */
     public function delete_files(context_module $context): void {
-        $fs = get_file_storage();
-        $fs->delete_area_files($context->id, "local_video_bridge", "video", 0);
-        $fs->delete_area_files($context->id, "mod_videoprogress", "video", 0);
+        get_file_storage()->delete_area_files($context->id, "local_video_bridge", "video", 0);
     }
 
     /**
@@ -170,7 +166,7 @@ class plugin extends plugin_base {
     public function get_player_config(stdClass $activity, context_module $context): array {
         global $CFG;
 
-        $url = $this->first_file_url($context, $this->get_storage_component($context), "video");
+        $url = $this->first_file_url($context, "local_video_bridge", "video");
         if ($url === '') {
             throw new moodle_exception("videofilemissing", "videoprogresssource_upload");
         }
@@ -209,44 +205,13 @@ class plugin extends plugin_base {
     public function get_transcription_file(context_module $context): stored_file|null {
         $files = get_file_storage()->get_area_files(
             $context->id,
-            $this->get_storage_component($context),
+            "local_video_bridge",
             "video",
             0,
             "filename",
             false
         );
         return $files ? reset($files) : null;
-    }
-
-    /**
-     * Returns the current storage component, falling back to Video Progress legacy files.
-     *
-     * @param context_module $context Activity module context.
-     * @return string File API component containing the uploaded video.
-     */
-    private function get_storage_component(context_module $context): string {
-        $fs = get_file_storage();
-        $files = $fs->get_area_files(
-            $context->id,
-            "local_video_bridge",
-            "video",
-            0,
-            "id",
-            false
-        );
-        if ($files) {
-            return "local_video_bridge";
-        }
-
-        $legacyfiles = $fs->get_area_files(
-            $context->id,
-            "mod_videoprogress",
-            "video",
-            0,
-            "id",
-            false
-        );
-        return $legacyfiles ? "mod_videoprogress" : "local_video_bridge";
     }
 
     /**
