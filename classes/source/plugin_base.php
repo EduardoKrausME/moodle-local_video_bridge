@@ -109,6 +109,34 @@ abstract class plugin_base {
     abstract public function get_amd_module(): string;
 
     /**
+     * Describes player features consumers may safely depend on.
+     *
+     * Providers may still implement best-effort methods when a capability is
+     * false, but consumers must not make that feature mandatory.
+     *
+     * @return array Boolean capabilities indexed by stable capability name.
+     */
+    public function get_capabilities(): array {
+        return [
+            'tracking' => true,
+            'seeking' => true,
+            'playbackcontrol' => true,
+            'playbackrate' => true,
+        ];
+    }
+
+    /**
+     * Reports whether this source guarantees a capability.
+     *
+     * @param string $capability Capability identifier.
+     * @return bool
+     */
+    final public function supports(string $capability): bool {
+        $capabilities = $this->get_capabilities();
+        return !empty($capabilities[$capability]);
+    }
+
+    /**
      * Prepares stored values and files for an edit form.
      *
      * @param array $defaultvalues Form values.

@@ -15,17 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Shared video source.
  *
- * @package   local_video_bridge
+ * @package   videoprogresssource_drive
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100504;
-$plugin->release = '1.1.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$string['driveurl'] = 'Google Drive URL or file ID';
+$string['invalidurl'] = 'Enter a valid Google Drive video URL or file ID.';
+$string['pluginname'] = 'Google Drive';
+$string['privacy:metadata'] = 'The Google Drive source stores no personal data independently of the consumer activity.';

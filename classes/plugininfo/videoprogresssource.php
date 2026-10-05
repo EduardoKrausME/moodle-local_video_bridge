@@ -39,7 +39,18 @@ class videoprogresssource extends base {
      * @return bool Whether Moodle may offer the uninstall action.
      */
     public function is_uninstall_allowed(): bool {
-        return !in_array($this->name, ['upload', 'url', 'youtube', 'vimeo', 'nextcloud'], true);
+        $bundled = [
+            'upload',
+            'url',
+            'youtube',
+            'vimeo',
+            'nextcloud',
+            'drive',
+            'pandavideo',
+            'ottflix',
+            'embed',
+        ];
+        return !in_array($this->name, $bundled, true);
     }
 
     /**

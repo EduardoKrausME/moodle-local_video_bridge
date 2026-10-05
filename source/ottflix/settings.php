@@ -15,17 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Shared video source.
  *
- * @package   local_video_bridge
+ * @package   videoprogresssource_ottflix
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100504;
-$plugin->release = '1.1.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$settings->add(new admin_setting_configtext(
+    'videoprogresssource_ottflix/baseurl',
+    get_string('baseurl', 'videoprogresssource_ottflix'),
+    get_string('baseurl_desc', 'videoprogresssource_ottflix'),
+    'https://app.ottflix.com.br/',
+    PARAM_URL
+));
+
+$settings->add(new admin_setting_configpasswordunmask(
+    'videoprogresssource_ottflix/token',
+    get_string('token', 'videoprogresssource_ottflix'),
+    get_string('token_desc', 'videoprogresssource_ottflix'),
+    ''
+));

@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Shared video source.
  *
- * @package   local_video_bridge
+ * @package   videoprogresssource_pandavideo
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100504;
-$plugin->release = '1.1.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$string['invalidurl'] = 'Enter a valid Panda Video identifier or dashboard URL.';
+$string['pandaurl'] = 'Panda Video identifier or URL';
+$string['playererror'] = 'Panda Video could not resolve this video.';
+$string['pluginname'] = 'Panda Video';
+$string['privacy:metadata'] = 'The Panda Video source stores no personal data independently of the consumer activity.';

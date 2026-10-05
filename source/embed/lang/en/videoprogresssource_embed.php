@@ -15,17 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Shared video source.
  *
- * @package   local_video_bridge
+ * @package   videoprogresssource_embed
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100504;
-$plugin->release = '1.1.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$string['embedurl'] = 'Embed URL';
+$string['invalidurl'] = 'Enter a valid HTTP or HTTPS embed URL.';
+$string['pluginname'] = 'Embed / iframe';
+$string['privacy:metadata'] = 'The embed source stores no personal data independently of the consumer activity.';

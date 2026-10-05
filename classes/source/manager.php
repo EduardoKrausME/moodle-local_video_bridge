@@ -36,10 +36,6 @@ use stored_file;
 
 /**
  * Discovers shared source providers and exposes them to any video activity.
- *
- * The videoprogresssource component prefix is intentionally retained for
- * backwards compatibility with the original source plugins. Ownership and
- * runtime discovery now live in local_video_bridge.
  */
 class manager {
     /** @var plugin_base[]|null Cached provider instances. */
@@ -131,16 +127,36 @@ class manager {
     }
 
     /**
-     * Returns localized options suitable for a source selector.
+     * Returns localized options, optionally requiring guaranteed capabilities.
      *
+     * @param array $requiredcapabilities Capability names which must all be true.
      * @return array Provider names indexed by short name.
      */
-    public function get_options(): array {
+    public function get_options(array $requiredcapabilities = []): array {
         $options = [];
         foreach ($this->get_plugins() as $name => $plugin) {
-            $options[$name] = $plugin->get_name();
+            $supported = true;
+            foreach ($requiredcapabilities as $capability) {
+                if (!$plugin->supports((string)$capability)) {
+                    $supported = false;
+                    break;
+                }
+            }
+            if ($supported) {
+                $options[$name] = $plugin->get_name();
+            }
         }
         return $options;
+    }
+
+    /**
+     * Returns the capabilities guaranteed by a provider.
+     *
+     * @param string $name Provider short name.
+     * @return array Boolean capabilities.
+     */
+    public function get_capabilities(string $name): array {
+        return $this->get_plugin($name)->get_capabilities();
     }
 
     /**
@@ -205,9 +221,6 @@ class manager {
 
     /**
      * Restores provider-specific fields before displaying an edit form.
-     *
-     * The standard aliases are supplied to legacy providers without forcing
-     * consumer plugins to use those names in their own database schema.
      *
      * @param array $defaultvalues Consumer form values.
      * @param context_module $context Activity module context.
@@ -297,9 +310,6 @@ class manager {
     /**
      * Builds browser-safe provider data plus template and AMD identifiers.
      *
-     * Shared HLS and Vimeo runtime libraries are always resolved from Video Bridge,
-     * even when a legacy provider still contains a historical videoprogress path.
-     *
      * @param stdClass $activity Consumer activity record.
      * @param context_module $context Activity module context.
      * @return array Player configuration.
@@ -320,6 +330,7 @@ class manager {
 
         return $config + [
             'source' => $source,
+            'capabilities' => $plugin->get_capabilities(),
             'adaptermodule' => $plugin->get_amd_module(),
             'sourcetemplate' => $plugin->get_player_template(),
         ];
