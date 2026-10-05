@@ -31,7 +31,7 @@
 function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
     global $DB;
 
-    if ($oldversion < 2026100507) {
+    if ($oldversion < 2026100508) {
         // Move uploads created while the source layer still belonged to mod_videoprogress.
         $legacyfiles = $DB->get_records('files', [
             'component' => 'mod_videoprogress',
@@ -55,7 +55,7 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
             }
         }
 
-        upgrade_plugin_savepoint(true, 2026100507, 'local', 'video_bridge');
+        upgrade_plugin_savepoint(true, 2026100508, 'local', 'video_bridge');
     }
 
     return true;
