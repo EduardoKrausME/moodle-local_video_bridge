@@ -130,7 +130,7 @@ class plugin extends plugin_base {
         return [
             "url" => (string)($config["url"] ?? ''),
             "hls" => !empty($config["hls"]),
-            "hlsjsurl" => $CFG->wwwroot . '/mod/videoprogress/vendor/hls/hls.min.js',
+            "hlsjsurl" => $CFG->wwwroot . '/local/video_bridge/vendor/hls/hls.min.js',
         ];
     }
 
