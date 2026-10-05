@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->component = "videoprogresssource_upload";
-$plugin->version = 2026100507;
+$plugin->version = 2026100508;
 $plugin->release = '1.3.0';
 $plugin->requires = 2024042200;
-$plugin->dependencies = ["local_video_bridge" => 2026100507];
+$plugin->dependencies = ["local_video_bridge" => 2026100508];
 $plugin->maturity = MATURITY_STABLE;
