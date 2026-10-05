@@ -5,6 +5,14 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Shared video source manager.
@@ -37,6 +45,15 @@ class manager {
     /** @var plugin_base[]|null Cached provider instances. */
     private ?array $plugins = null;
 
+    /** @var string Field storing the provider short name. */
+    private string $sourcefield;
+
+    /** @var string Field storing normalized JSON configuration. */
+    private string $configfield;
+
+    /** @var string|null Optional field storing a legacy provider value. */
+    private ?string $legacyfield;
+
     /**
      * Creates a manager for a consumer plugin database schema.
      *
@@ -45,15 +62,19 @@ class manager {
      * @param string|null $legacyfield Optional legacy provider value field.
      */
     public function __construct(
-        private string $sourcefield = 'videosource',
-        private string $configfield = 'sourceconfig',
-        private ?string $legacyfield = 'videourl'
+        string $sourcefield = 'videosource',
+        string $configfield = 'sourceconfig',
+        ?string $legacyfield = 'videourl'
     ) {
         foreach (array_filter([$sourcefield, $configfield, $legacyfield]) as $field) {
             if (!preg_match('/^[a-z][a-z0-9_]*$/', $field)) {
                 throw new coding_exception('Invalid Video Bridge field name: ' . $field);
             }
         }
+
+        $this->sourcefield = $sourcefield;
+        $this->configfield = $configfield;
+        $this->legacyfield = $legacyfield;
     }
 
     /**
@@ -293,7 +314,8 @@ class manager {
             $config['hlsjsurl'] = (new moodle_url('/local/video_bridge/vendor/hls/hls.min.js'))->out(false);
         }
         if (array_key_exists('vimeoplayerurl', $config)) {
-            $config['vimeoplayerurl'] = (new moodle_url('/local/video_bridge/vendor/vimeo/player.min.js'))->out(false);
+            $config['vimeoplayerurl'] =
+                (new moodle_url('/local/video_bridge/vendor/vimeo/player.min.js'))->out(false);
         }
 
         return $config + [

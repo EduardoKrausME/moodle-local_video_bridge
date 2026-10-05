@@ -5,6 +5,14 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Plugin information for shared video source subplugins.
@@ -28,7 +36,7 @@ class videoprogresssource extends base {
     /**
      * Prevents removal of providers distributed as part of Video Bridge.
      *
-     * @return bool
+     * @return bool Whether Moodle may offer the uninstall action.
      */
     public function is_uninstall_allowed(): bool {
         return !in_array($this->name, ['upload', 'url', 'youtube', 'vimeo', 'nextcloud'], true);
@@ -37,7 +45,7 @@ class videoprogresssource extends base {
     /**
      * Returns the Video Bridge administration page.
      *
-     * @return moodle_url
+     * @return moodle_url Management URL.
      */
     public static function get_manage_url(): moodle_url {
         return new moodle_url('/admin/settings.php', ['section' => 'local_video_bridge']);
@@ -46,7 +54,7 @@ class videoprogresssource extends base {
     /**
      * Returns the source-specific settings section name.
      *
-     * @return string
+     * @return string Settings section name.
      */
     public function get_settings_section_name(): string {
         return $this->type . '_' . $this->name;
@@ -61,7 +69,8 @@ class videoprogresssource extends base {
      * @return void
      */
     public function load_settings(part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig): void {
-        if (!$this->is_installed_and_upgraded() || !$hassiteconfig || !file_exists($this->full_path('settings.php'))) {
+        if (!$this->is_installed_and_upgraded() || !$hassiteconfig ||
+                !file_exists($this->full_path('settings.php'))) {
             return;
         }
 

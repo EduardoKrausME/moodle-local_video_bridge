@@ -5,13 +5,31 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Brazilian Portuguese language strings for Video Bridge.
+ *
+ * @package   local_video_bridge
+ * @copyright 2026 Eduardo Kraus
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die;
 
+$string['browservideonotsupported'] = 'Seu navegador não oferece suporte à reprodução de vídeo HTML5.';
+$string['invalidsourceplugin'] = 'A fonte de vídeo "{$a}" é inválida e foi ignorada.';
 $string['pluginname'] = 'Video Bridge';
+$string['privacy:metadata'] = 'O Video Bridge não armazena dados pessoais por conta própria. Plugins consumidores e subplugins de fonte podem armazenar configurações ou arquivos no contexto de suas atividades.';
+$string['sourcepluginmissing'] = 'A fonte de vídeo "{$a}" não está instalada ou não está disponível.';
 $string['sources'] = 'Fontes de vídeo';
 $string['sources_desc'] = 'Adaptadores compartilhados de fontes de vídeo usados pelos plugins de vídeo do Moodle.';
-$string['invalidsourceplugin'] = 'A fonte de vídeo "{$a}" é inválida e foi ignorada.';
-$string['sourcepluginmissing'] = 'A fonte de vídeo "{$a}" não está instalada ou não está disponível.';
-$string['browservideonotsupported'] = 'Seu navegador não oferece suporte à reprodução de vídeo HTML5.';
-$string['privacy:metadata'] = 'O Video Bridge não armazena dados pessoais por conta própria. Plugins consumidores e subplugins de fonte podem armazenar configurações ou arquivos no contexto de suas atividades.';
+$string['subplugintype_videoprogresssource'] = 'Fonte de vídeo';
+$string['subplugintype_videoprogresssource_plural'] = 'Fontes de vídeo';

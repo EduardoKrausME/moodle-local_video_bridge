@@ -5,19 +5,34 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die;
+/**
+ * Library callbacks for Video Bridge.
+ *
+ * @package   local_video_bridge
+ * @copyright 2026 Eduardo Kraus
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 /**
  * Serves protected uploaded videos owned by Video Bridge.
  *
- * @param stdClass $course
- * @param stdClass|null $cm
- * @param context $context
- * @param string $filearea
- * @param array $args
- * @param bool $forcedownload
- * @param array $options
+ * @package local_video_bridge
+ * @param stdClass $course Course record.
+ * @param stdClass|null $cm Course-module record.
+ * @param context $context File context.
+ * @param string $filearea File area.
+ * @param array $args Remaining pluginfile path arguments.
+ * @param bool $forcedownload Whether the file should be downloaded.
+ * @param array $options Additional file serving options.
  * @return bool
  */
 function local_video_bridge_pluginfile($course, $cm, context $context, string $filearea, array $args,
