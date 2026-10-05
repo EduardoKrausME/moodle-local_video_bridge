@@ -1,41 +1,12 @@
-# Subplugins de fonte de vídeo
+# Shared video sources
 
-O tipo `videoprogresssource` permite adicionar uma nova origem de vídeo sem alterar o módulo principal. Cada subplugin
-fica em `local/video_bridge/source/<nome>` e usa o componente `videoprogresssource_<nome>`.
+Video Bridge owns the source subplugin type stored under `local/video_bridge/source/<name>`.
 
-## Estrutura mínima
+For backwards compatibility the technical type remains `videoprogresssource` and bundled components remain `videoprogresssource_<name>`. This is only the Moodle component identifier; the providers are shared and must not contain Video Progress business rules.
 
-```text
-source/example/
-├── amd/
-│   ├── build/player.js
-│   ├── build/player.min.js
-│   └── src/player.js
-├── classes/
-│   ├── plugin.php
-│   └── privacy/provider.php
-├── lang/
-│   ├── en/videoprogresssource_example.php
-│   └── pt_br/videoprogresssource_example.php
-├── templates/player.mustache
-└── version.php
-```
+A provider owns source-specific form fields, validation, normalized configuration, source files when needed, its Mustache player template and its AMD adapter. Completion, grades, anti-skip, tracking, annotations, branching, questions and analytics belong to the consumer activity.
 
-`classes/plugin.php` deve declarar `videoprogresssource_example\plugin` e
-estender `local_video_bridge\source\plugin_base`. A classe informa:
-
-- nome localizado;
-- ordem opcional no seletor e preferência padrão;
-- campos e regras de visibilidade do formulário;
-- validação e normalização da configuração;
-- valor de compatibilidade para backups antigos;
-- configuração segura enviada ao navegador;
-- template Mustache;
-- módulo AMD;
-- recursos opcionais de poster, legendas, transcrição e File API.
-
-O módulo AMD deve retornar um objeto com o método `create(root, config)`. A Promise resolvida deve fornecer o contrato
-comum:
+The AMD module returns an object with `create(root, config)`. The resulting adapter implements:
 
 ```text
 play()
@@ -52,10 +23,4 @@ onEnded(handler)
 onRateChange(handler)
 ```
 
-O subplugin deve calcular somente eventos e dados brutos do player. O percentual, os segmentos válidos, o anti-skip, a
-conclusão e a nota continuam sendo calculados pelo servidor no módulo principal.
-
-Configurações administrativas opcionais podem ser declaradas em `settings.php`. Arquivos próprios devem usar a File API
-do componente do subplugin e implementar o respectivo callback `pluginfile` quando necessário.
-
-Toda classe e todo método novo deve possuir PHPDoc ou JSDoc em inglês explicando sua responsabilidade.
+Generated AMD output belongs only in `amd/build/*.min.js`. Files named `*.min.min.js` are invalid and must not be committed.

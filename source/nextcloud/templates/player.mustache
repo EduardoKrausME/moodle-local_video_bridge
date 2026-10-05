@@ -16,24 +16,6 @@
 }}
 {{!
     @template videoprogresssource_nextcloud/player
-
-    Example context (json):
-    {
-        "player": {
-            "poster": "https://example.test/poster.jpg",
-            "disabledownload": false,
-            "disablepip": false,
-            "url": "https://cloud.example.test/index.php/s/ShareToken/download",
-            "captions": [
-                {
-                    "url": "https://example.test/captions.vtt",
-                    "language": "pt-BR",
-                    "label": "Português",
-                    "isdefault": true
-                }
-            ]
-        }
-    }
 }}
 
 <video class="videoprogress-player__video" data-region="html5-player" controls preload="metadata"
@@ -45,5 +27,5 @@
         <track kind="subtitles" src="{{{url}}}" srclang="{{{language}}}" label="{{{label}}}"
                {{#isdefault}}default{{/isdefault}}>
     {{/player.captions}}
-    {{#str}} browservideonotsupported, videoprogress {{/str}}
+    {{#str}} browservideonotsupported, local_video_bridge {{/str}}
 </video>

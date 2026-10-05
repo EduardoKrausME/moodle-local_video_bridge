@@ -1,8 +1,8 @@
 {
   "subplugintypes": {
-    "videobridgesource": "source"
+    "videoprogresssource": "source"
   },
   "plugintypes": {
-    "videobridgesource": "local/video_bridge/source"
+    "videoprogresssource": "local/video_bridge/source"
   }
 }
