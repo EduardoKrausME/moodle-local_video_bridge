@@ -173,7 +173,7 @@ class plugin extends plugin_base {
         return [
             "url" => $url,
             "hls" => (bool)preg_match('/\.m3u8(?:$|\?)/i', $url),
-            "hlsjsurl" => $CFG->wwwroot . '/mod/videoprogress/vendor/hls/hls.min.js',
+            "hlsjsurl" => $CFG->wwwroot . '/local/video_bridge/vendor/hls/hls.min.js',
         ];
     }
 
