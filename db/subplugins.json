@@ -1,0 +1,8 @@
+{
+  "subplugintypes": {
+    "videobridgesource": "source"
+  },
+  "plugintypes": {
+    "videobridgesource": "local/video_bridge/source"
+  }
+}
