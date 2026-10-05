@@ -129,7 +129,7 @@ class plugin extends plugin_base {
         return [
             "vimeoid" => (string)($config["id"] ?? ''),
             "vimeohash" => (string)($config["hash"] ?? ''),
-            "vimeoplayerurl" => $CFG->wwwroot . '/mod/videoprogress/vendor/vimeo/player.min.js',
+            "vimeoplayerurl" => $CFG->wwwroot . '/local/video_bridge/vendor/vimeo/player.min.js',
         ];
     }
 
