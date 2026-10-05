@@ -29,6 +29,11 @@ use local_video_bridge\source\plugin_base;
 
 /**
  * Verifies source discovery and normalization independently from consumer activities.
+ *
+ * @covers \\local_video_bridge\\source\\manager
+ * @covers \\videoprogresssource_url\\plugin
+ * @covers \\videoprogresssource_youtube\\plugin
+ * @uses \\local_video_bridge\\source\\plugin_base
  */
 final class source_manager_test extends \advanced_testcase {
     /**
