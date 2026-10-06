@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['core/templates'], function(Templates) {
+define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
     const MIN_SAVE_INTERVAL = 60000;
     const MAX_BUCKETS = 100;
 
@@ -527,6 +527,36 @@ define(['core/templates'], function(Templates) {
             }
 
             this.lastSentAt = now;
+            if (this.config.ajaxmethod) {
+                const args = {};
+                data.forEach((value, key) => {
+                    if (key !== 'sesskey') {
+                        args[key] = value;
+                    }
+                });
+                Ajax.call([{
+                    methodname: this.config.ajaxmethod,
+                    args: args,
+                }])[0].then((result) => {
+                    if (!result || !result.success) {
+                        throw new Error('Unable to save Video Bridge progress.');
+                    }
+                    snapshot.forEach((bucket) => this.pending.delete(bucket));
+                    this.dirty = this.pending.size > 0;
+                    if (Array.isArray(result.map)) {
+                        result.map.forEach((bucket) => this.watched.add(Number(bucket)));
+                    }
+                    if (Number(result.duration || 0) > 0) {
+                        this.duration = Number(result.duration);
+                    }
+                    this.paint();
+                    return null;
+                }).catch(() => {
+                    this.dirty = true;
+                });
+                return;
+            }
+
             fetch(this.config.endpoint, {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -549,6 +579,7 @@ define(['core/templates'], function(Templates) {
                     this.duration = Number(result.duration);
                 }
                 this.paint();
+                return null;
             }).catch(() => {
                 this.dirty = true;
             });
