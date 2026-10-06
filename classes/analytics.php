@@ -143,10 +143,7 @@ class analytics {
 
         $serverstarted = $record
             ? max(0, min($now, (int)$record->startedat))
-            : max(0, $now - min(
-                86400,
-                $watchtime + (int)ceil(array_sum($inactivitygaps)) + 5
-            ));
+            : $now;
         $serverended = (!empty($payload['endedat']) || ($record && !empty($record->endedat)))
             ? $now
             : 0;
