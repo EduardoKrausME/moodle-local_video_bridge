@@ -112,3 +112,7 @@ $string['privacy:metadata:session:percentend'] = 'Percentual autoritativo assist
 $string['privacy:metadata:session:ratechanges'] = 'Quantidade de mudanças de velocidade observadas.';
 $string['privacy:metadata:session:receivedended'] = 'Se o player emitiu o evento ended.';
 $string['privacy:metadata:session:endreason'] = 'Motivo descritivo normalizado do encerramento da sessão.';
+
+$string['eventprogressupdated'] = 'Progresso do vídeo atualizado';
+$string['eventprogressthresholdreached'] = 'Limite de progresso do vídeo atingido';
+$string['eventvideocompleted'] = 'Vídeo concluído';
