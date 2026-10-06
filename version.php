@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->component = 'local_video_bridge';
-$plugin->version = 2026100611;
-$plugin->release = '1.7.2';
+$plugin->version = 2026100612;
+$plugin->release = '1.7.3';
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = ['local_ai_bridge' => 2026093001];
