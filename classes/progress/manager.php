@@ -43,17 +43,20 @@ class manager {
      * @param context_module $context Module context.
      * @param string $source Source short name.
      * @param string $sourceconfig Normalized source configuration.
+     * @param string $telemetrylevel Telemetry detail level.
      * @return array
      */
     public static function build_config(
         context_module $context,
         string $source,
-        string $sourceconfig = ''
+        string $sourceconfig = '',
+        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC
     ): array {
         global $CFG, $USER;
 
-        if (!isloggedin() || isguestuser()) {
-            return ['enabled' => false];
+        $telemetrylevel = \local_video_bridge\analytics::normalise_level($telemetrylevel);
+        if (!isloggedin() || isguestuser() || $telemetrylevel === \local_video_bridge\analytics::LEVEL_OFF) {
+            return ['enabled' => false, 'telemetrylevel' => $telemetrylevel];
         }
 
         $cm = get_coursemodule_from_id(null, $context->instanceid, 0, false, MUST_EXIST);
@@ -84,6 +87,7 @@ class manager {
             'map' => self::decode_map((string)$progress->map),
             'saveinterval' => self::SAVE_INTERVAL_MS,
             'label' => get_string('progressmap', 'local_video_bridge'),
+            'telemetrylevel' => $telemetrylevel,
         ];
     }
 
