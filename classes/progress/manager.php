@@ -706,6 +706,26 @@ class manager {
         int $threshold,
         string $ownercomponent = ''
     ): int {
+        global $DB;
+
+        $component = clean_param($component, PARAM_COMPONENT);
+        $ownercomponent = clean_param($ownercomponent ?: $component, PARAM_COMPONENT);
+        $threshold = max(1, min(100, $threshold));
+
+        $DB->delete_records_select(
+            'local_video_bridge_threshold',
+            'contextid = :contextid AND component = :component AND itemid = :itemid ' .
+                'AND mediahash = :mediahash AND ownercomponent = :ownercomponent AND threshold <> :threshold',
+            [
+                'contextid' => $contextid,
+                'component' => $component,
+                'itemid' => $itemid,
+                'mediahash' => $mediahash,
+                'ownercomponent' => $ownercomponent,
+                'threshold' => $threshold,
+            ]
+        );
+
         return self::register_threshold(
             $contextid,
             $component,
