@@ -68,6 +68,15 @@ try {
         throw new invalid_parameter_exception('Invalid progress bucket list.');
     }
 
+    $previousprogress = manager::get_progress(
+        $context->id,
+        $component,
+        $itemid,
+        $mediahash,
+        (int)$USER->id
+    );
+    $previouspercent = $previousprogress ? (int)$previousprogress->percent : 0;
+
     $progress = manager::save(
         $context->id,
         $component,
@@ -88,6 +97,8 @@ try {
         if (!is_array($telemetry)) {
             throw new invalid_parameter_exception('Invalid Video Bridge telemetry payload.');
         }
+        $telemetry['_serverpercentstart'] = $previouspercent;
+        $telemetry['_serverpercentend'] = (int)$progress->percent;
         analytics::save_session(
             $context,
             $component,
