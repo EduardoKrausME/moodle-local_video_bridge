@@ -124,3 +124,7 @@ $string['privacy:metadata:session:percentend'] = 'Authoritative watched percenta
 $string['privacy:metadata:session:ratechanges'] = 'Number of playback-rate changes observed.';
 $string['privacy:metadata:session:receivedended'] = 'Whether the player emitted an ended event.';
 $string['privacy:metadata:session:endreason'] = 'Normalized descriptive reason for the session ending.';
+
+$string['eventprogressupdated'] = 'Video progress updated';
+$string['eventprogressthresholdreached'] = 'Video progress threshold reached';
+$string['eventvideocompleted'] = 'Video completed';
