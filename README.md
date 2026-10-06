@@ -130,3 +130,20 @@ Multi-media reports should use `progress\manager::get_progress_bulk()`, which lo
 user × media matrix with one query rather than issuing a query for every table cell. The
 bridge remains the owner of viewing maps and normalized progress; consumer plugins only
 store their own media catalog and pedagogical/compliance rules.
+
+
+## Generic timeline cues
+
+`local_video_bridge/timeline` is a semantic-free AMD engine for consumers that need timestamp cues. It registers cues against the normalized adapter, detects effective continuous playback, ignores forward discontinuities/seeks, prevents accidental duplicate triggers, exposes the current time and seek operation, and can render reusable timeline markers.
+
+The bridge does not define pedagogical cue types. A consumer may use payloads such as reflection, confidence, poll or message, but those meanings, persistence rules and UI remain in the consumer plugin.
+
+```javascript
+const timeline = Timeline.create(adapter);
+timeline.register({id: 'intro', time: 42, type: 'consumer-defined', payload: {}, once: true});
+timeline.onTrigger((cue) => console.log(cue));
+timeline.getCurrentTime();
+timeline.seekTo(42);
+```
+
+For reports, `local_video_bridge\\progress\\manager::media_hash()` and `get_activity_progress()` expose the same normalized progress identity and aggregate records without consumers coupling themselves to the bridge table schema.
