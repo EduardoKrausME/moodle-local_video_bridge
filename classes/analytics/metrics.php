@@ -38,58 +38,58 @@ final class metrics {
     public int $duration = 0;
 
     /** @var int Unique watched time in seconds. */
-    public int $unique_watch_time = 0;
+    public int $uniquewatchtime = 0;
 
     /** @var int Total playback time in seconds. */
-    public int $playback_time = 0;
+    public int $playbacktime = 0;
 
     /** @var int Total real session time in seconds. */
-    public int $session_time = 0;
+    public int $sessiontime = 0;
 
     /** @var int Number of playback sessions. */
     public int $sessions = 0;
 
     /** @var int Number of pauses. */
-    public int $pause_count = 0;
+    public int $pausecount = 0;
 
     /** @var int Number of seeks. */
-    public int $seek_count = 0;
+    public int $seekcount = 0;
 
     /** @var int Number of replay/backward-seek actions. */
-    public int $replay_count = 0;
+    public int $replaycount = 0;
 
     /** @var float Maximum observed playback rate. */
-    public float $max_rate = 1.0;
+    public float $maxrate = 1.0;
 
     /** @var float Average observed playback rate. */
-    public float $average_rate = 1.0;
+    public float $averagerate = 1.0;
 
     /** @var bool Whether playback reached the end. */
-    public bool $reached_end = false;
+    public bool $reachedend = false;
 
     /** @var array Consolidated watched ranges. */
-    public array $watched_ranges = [];
+    public array $watchedranges = [];
 
     /** @var int Last observed playback position. */
-    public int $last_position = 0;
+    public int $lastposition = 0;
 
     /** @var float Playback regularity percentage. */
     public float $regularity = 0.0;
 
     /** @var int Number of forward seeks. */
-    public int $seeks_forward = 0;
+    public int $seeksforward = 0;
 
     /** @var int Number of backward seeks. */
-    public int $seeks_backward = 0;
+    public int $seeksbackward = 0;
 
     /** @var float Largest observed forward seek in seconds. */
-    public float $largest_forward_seek = 0.0;
+    public float $largestforwardseek = 0.0;
 
     /** @var array Continuous playback blocks. */
-    public array $continuous_blocks = [];
+    public array $continuousblocks = [];
 
     /** @var array Inactivity gaps. */
-    public array $inactivity_gaps = [];
+    public array $inactivitygaps = [];
 
     /**
      * Builds metrics from provider-independent analytics facts.
