@@ -189,6 +189,14 @@ class manager {
         $replays = self::decode_array($session->replaypoints ?? '[]');
         $continuous = self::decode_array($session->continuousblocks ?? '[]');
         $gaps = self::decode_array($session->inactivitygaps ?? '[]');
+        $events = self::decode_array($session->events ?? '[]');
+        $receivedended = false;
+        foreach ($events as $event) {
+            if (is_array($event) && ($event['type'] ?? '') === 'ended') {
+                $receivedended = true;
+                break;
+            }
+        }
 
         $maximumrate = max(1.0, (float)($session->speedavg ?? 1.0));
         $weightedrate = 0.0;
@@ -233,10 +241,11 @@ class manager {
             'seeks_backward' => count($replays),
             'largest_forward_seek' => round($largestseek, 3),
             'pause_count' => max(0, (int)($session->pauses ?? 0)),
-            'reached_end' => $ended && $duration > 0 && $endposition >= max(0.0, $duration - 2.0),
+            'reached_end' => $receivedended,
             'watched_ranges' => $ranges,
             'continuous_blocks' => is_array($continuous) ? $continuous : [],
             'inactivity_gaps' => array_values(array_filter(array_map('floatval', is_array($gaps) ? $gaps : []))),
+            'events' => $events,
             'dropoff' => max(0.0, (float)($session->dropoff ?? 0)),
             'max_position' => max(0.0, (float)($session->maxposition ?? 0)),
         ];
