@@ -26,6 +26,7 @@ namespace videoprogresssource_upload;
 
 use coding_exception;
 use context_module;
+use local_video_bridge\media\config as media_config;
 use local_video_bridge\source\plugin_base;
 use moodle_exception;
 use MoodleQuickForm;
@@ -175,6 +176,102 @@ class plugin extends plugin_base {
             "hls" => (bool)preg_match('/\.m3u8(?:$|\?)/i', $url),
             "hlsjsurl" => $CFG->wwwroot . '/local/video_bridge/vendor/hls/hls.min.js',
         ];
+    }
+
+    /**
+     * Prepares one uploaded media item using its media id as File API itemid.
+     *
+     * @param array $defaultvalues Form values.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function prepare_media_form_data(
+        array &$defaultvalues,
+        context_module $context,
+        int $mediaid
+    ): void {
+        $draftitemid = file_get_submitted_draft_itemid("videofile");
+        file_prepare_draft_area($draftitemid, $context->id, "local_video_bridge", "video", $mediaid, [
+            "subdirs" => 0,
+            "maxfiles" => 1,
+        ]);
+        $defaultvalues["videofile"] = $draftitemid;
+    }
+
+    /**
+     * Saves one uploaded media item.
+     *
+     * @param stdClass $data Form data.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function save_media_files(stdClass $data, context_module $context, int $mediaid): void {
+        if (!isset($data->videofile)) {
+            return;
+        }
+
+        file_save_draft_area_files($data->videofile, $context->id, "local_video_bridge", "video", $mediaid, [
+            "subdirs" => 0,
+            "maxfiles" => 1,
+            "accepted_types" => ['.mp4', '.webm', '.ogv', '.m4v', '.mov', '.m3u8'],
+        ]);
+    }
+
+    /**
+     * Deletes one uploaded media item.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function delete_media_files(context_module $context, int $mediaid): void {
+        get_file_storage()->delete_area_files($context->id, "local_video_bridge", "video", $mediaid);
+    }
+
+    /**
+     * Builds upload player data for one media item.
+     *
+     * @param media_config $media Media configuration.
+     * @param context_module $context Module context.
+     * @return array Player configuration.
+     */
+    public function get_player_config_for_media(media_config $media, context_module $context): array {
+        global $CFG;
+
+        $url = $this->first_file_url($context, "local_video_bridge", "video", $media->get_mediaid());
+        if ($url === '') {
+            throw new moodle_exception("videofilemissing", "videoprogresssource_upload");
+        }
+
+        return [
+            "url" => $url,
+            "hls" => (bool)preg_match('/\.m3u8(?:$|\?)/i', $url),
+            "hlsjsurl" => $CFG->wwwroot . '/local/video_bridge/vendor/hls/hls.min.js',
+        ];
+    }
+
+    /**
+     * Returns a transcription file for one uploaded media item.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return stored_file|null
+     */
+    public function get_transcription_file_for_media(
+        context_module $context,
+        int $mediaid
+    ): stored_file|null {
+        $files = get_file_storage()->get_area_files(
+            $context->id,
+            "local_video_bridge",
+            "video",
+            $mediaid,
+            "filename",
+            false
+        );
+        return $files ? reset($files) : null;
     }
 
     /**
