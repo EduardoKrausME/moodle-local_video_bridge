@@ -112,3 +112,5 @@ $string['subplugintype_videoprogresssource_plural'] = 'Video sources';
 $string['unknown'] = 'Not provided';
 
 $string['eventanalyticsupdated'] = 'Video analytics updated';
+
+$string['privacy:metadata:session:events'] = 'Compact ordered playback events recorded for the session.';
