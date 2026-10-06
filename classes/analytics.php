@@ -101,10 +101,10 @@ class analytics {
             ? self::normalise_points($payload['pausepoints'] ?? [])
             : [];
         $skippoints = $level === self::LEVEL_DETAILED
-            ? self::normalise_ranges($payload['skippoints'] ?? [], 1000)
+            ? self::normalise_event_ranges($payload['skippoints'] ?? [], 1000)
             : [];
         $replaypoints = $level === self::LEVEL_DETAILED
-            ? self::normalise_ranges($payload['replaypoints'] ?? [], 1000)
+            ? self::normalise_event_ranges($payload['replaypoints'] ?? [], 1000)
             : [];
         $continuousblocks = $level === self::LEVEL_DETAILED
             ? self::normalise_blocks($payload['continuousblocks'] ?? [])
@@ -312,10 +312,12 @@ class analytics {
 
             $buckets[self::position_to_bucket(0, $duration, $bucketcount)]['plays'] += (int)$session->plays;
             self::add_points($buckets, json_decode((string)$session->pausepoints, true) ?: [], 'pauses', $duration, $bucketcount);
-            self::add_range_starts($buckets, json_decode((string)$session->skippoints, true) ?: [], 'skips', $duration, $bucketcount);
-            self::add_range_starts($buckets, json_decode((string)$session->replaypoints, true) ?: [], 'replays', $duration, $bucketcount);
-            $dropoff = max(0, min($duration, (int)$session->dropoff));
-            $buckets[self::position_to_bucket($dropoff, $duration, $bucketcount)]['dropoffs']++;
+            self::add_range_events($buckets, json_decode((string)$session->skippoints, true) ?: [], 'skips', $duration, $bucketcount);
+            self::add_range_events($buckets, json_decode((string)$session->replaypoints, true) ?: [], 'replays', $duration, $bucketcount);
+            if ((int)$session->endedat > 0) {
+                $dropoff = max(0, min($duration, (int)$session->dropoff));
+                $buckets[self::position_to_bucket($dropoff, $duration, $bucketcount)]['dropoffs']++;
+            }
         }
 
         foreach ($seenbybucket as $bucket => $users) {
@@ -336,13 +338,22 @@ class analytics {
         }
     }
 
-    private static function add_range_starts(array &$buckets, array $ranges, string $field, int $duration, int $bucketcount): void {
+    private static function add_range_events(
+        array &$buckets,
+        array $ranges,
+        string $field,
+        int $duration,
+        int $bucketcount
+    ): void {
         foreach (array_slice($ranges, 0, 1000) as $range) {
             if (!is_array($range) || count($range) < 2) {
                 continue;
             }
-            $bucket = self::position_to_bucket((float)$range[0], $duration, $bucketcount);
-            $buckets[$bucket][$field]++;
+            $first = self::position_to_bucket((float)$range[0], $duration, $bucketcount);
+            $last = self::position_to_bucket((float)$range[1], $duration, $bucketcount);
+            for ($bucket = min($first, $last); $bucket <= max($first, $last); $bucket++) {
+                $buckets[$bucket][$field]++;
+            }
         }
     }
 
@@ -379,6 +390,24 @@ class analytics {
             }
         }
         return $merged;
+    }
+
+    private static function normalise_event_ranges($ranges, int $limit = 1000): array {
+        if (!is_array($ranges)) {
+            return [];
+        }
+        $clean = [];
+        foreach (array_slice($ranges, 0, $limit) as $range) {
+            if (!is_array($range) || count($range) < 2) {
+                continue;
+            }
+            $start = max(0, min(604800, (float)$range[0]));
+            $end = max(0, min(604800, (float)$range[1]));
+            if (abs($end - $start) > 0.05) {
+                $clean[] = [round($start, 2), round($end, 2)];
+            }
+        }
+        return $clean;
     }
 
     private static function normalise_points($points): array {
