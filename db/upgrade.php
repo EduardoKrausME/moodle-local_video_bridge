@@ -85,7 +85,6 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
             XMLDB_INDEX_UNIQUE,
             ['contextid', 'component', 'itemid', 'mediahash', 'userid']
         );
-        $table->add_index('contextid', XMLDB_INDEX_NOTUNIQUE, ['contextid']);
         $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
         $table->add_index('component_item', XMLDB_INDEX_NOTUNIQUE, ['component', 'itemid']);
 
