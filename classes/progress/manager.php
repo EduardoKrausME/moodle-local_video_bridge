@@ -691,9 +691,18 @@ class manager {
             return (int)$existing->id;
         }
 
-        return (int)$DB->insert_record('local_video_bridge_threshold', (object)($params + [
-            'timecreated' => time(),
-        ]));
+        try {
+            return (int)$DB->insert_record('local_video_bridge_threshold', (object)($params + [
+                'timecreated' => time(),
+            ]));
+        } catch (\dml_write_exception $exception) {
+            return (int)$DB->get_field(
+                'local_video_bridge_threshold',
+                'id',
+                $params,
+                MUST_EXIST
+            );
+        }
     }
 
     /**
