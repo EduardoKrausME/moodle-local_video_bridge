@@ -1,0 +1,23 @@
+{{!
+    @template local_video_bridge/progress_map
+
+    Shared per-user viewing map rendered below any trackable Video Bridge player.
+}}
+<div class="video-bridge-progress" data-video-bridge-progress>
+    <div class="video-bridge-progress__map"
+         data-region="progress-map"
+         role="progressbar"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         aria-valuenow="{{percent}}">
+        {{#buckets}}
+            <span class="video-bridge-progress__bucket{{#watched}} is-watched{{/watched}}"
+                  data-bucket="{{index}}"
+                  data-time="{{time}}"
+                  title="{{title}}"></span>
+        {{/buckets}}
+    </div>
+    <div class="video-bridge-progress__label">
+        {{label}}: <strong data-region="progress-percent">{{percent}}%</strong>
+    </div>
+</div>
