@@ -93,6 +93,16 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
 
             this.bind();
             this.render();
+
+            if (this.telemetry.level !== 'off'
+                    && this.config.telemetryenabled !== false
+                    && Number(this.config.telemetryenabled ?? 1) !== 0) {
+                // Persist exactly one server-anchored session start. This is not
+                // a heartbeat and does not create a high-frequency event stream.
+                this.dirty = true;
+                this.lastSentAt = 0;
+                this.flush(false);
+            }
         }
 
         createTelemetry() {
