@@ -27,8 +27,6 @@
             <INDEXES>
                 <INDEX NAME="usage_user" UNIQUE="true"
                        FIELDS="contextid, component, itemid, mediahash, userid"/>
-                <INDEX NAME="contextid" UNIQUE="false" FIELDS="contextid"/>
-                <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
                 <INDEX NAME="component_item" UNIQUE="false" FIELDS="component, itemid"/>
             </INDEXES>
         </TABLE>
