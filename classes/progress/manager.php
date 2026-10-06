@@ -62,7 +62,7 @@ class manager {
         $cm = get_coursemodule_from_id(null, $context->instanceid, 0, false, MUST_EXIST);
         $component = 'mod_' . $cm->modname;
         $itemid = (int)$cm->instance;
-        $mediahash = hash('sha256', $source . '|' . $sourceconfig);
+        $mediahash = \local_video_bridge\analytics::media_hash($source, $sourceconfig);
         $progress = self::get_or_create(
             $context->id,
             $component,
