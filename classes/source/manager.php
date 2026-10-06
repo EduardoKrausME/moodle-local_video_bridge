@@ -313,9 +313,14 @@ class manager {
      *
      * @param stdClass $activity Consumer activity record.
      * @param context_module $context Activity module context.
+     * @param string $telemetrylevel Telemetry level requested by the consumer.
      * @return array Player configuration.
      */
-    public function get_player_config(stdClass $activity, context_module $context): array {
+    public function get_player_config(
+        stdClass $activity,
+        context_module $context,
+        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC
+    ): array {
         $record = $this->provider_record($activity);
         $source = clean_param((string)$record->videosource, PARAM_PLUGIN);
         $plugin = $this->get_plugin($source);
@@ -340,7 +345,8 @@ class manager {
             $playerconfig['progress'] = progress_manager::build_config(
                 $context,
                 $source,
-                (string)($record->sourceconfig ?? '')
+                (string)($record->sourceconfig ?? ''),
+                $telemetrylevel
             );
         }
 
