@@ -76,6 +76,7 @@ class manager {
         return [
             'enabled' => true,
             'endpoint' => $CFG->wwwroot . '/local/video_bridge/progress.php',
+            'ajaxmethod' => 'local_video_bridge_save_progress',
             'sesskey' => sesskey(),
             'contextid' => $context->id,
             'component' => $component,
