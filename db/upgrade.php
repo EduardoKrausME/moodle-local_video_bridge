@@ -195,5 +195,57 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026100602, 'local', 'video_bridge');
     }
 
+
+    if ($oldversion < 2026100606) {
+        $dbman = $DB->get_manager();
+        $table = new xmldb_table('local_video_bridge_session');
+
+        if ($dbman->table_exists($table)) {
+            $levelfield = new xmldb_field(
+                'level',
+                XMLDB_TYPE_CHAR,
+                '16',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                'basic',
+                'sessionid'
+            );
+            if ($dbman->field_exists($table, $levelfield)) {
+                $dbman->change_field_precision($table, $levelfield);
+            }
+
+            $continuousfield = new xmldb_field(
+                'continuousblocks',
+                XMLDB_TYPE_TEXT,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'rates'
+            );
+            if (!$dbman->field_exists($table, $continuousfield)) {
+                $dbman->add_field($table, $continuousfield);
+            }
+
+            $inactivityfield = new xmldb_field(
+                'inactivitygaps',
+                XMLDB_TYPE_TEXT,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'continuousblocks'
+            );
+            if (!$dbman->field_exists($table, $inactivityfield)) {
+                $dbman->add_field($table, $inactivityfield);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026100606, 'local', 'video_bridge');
+    }
+
     return true;
 }
