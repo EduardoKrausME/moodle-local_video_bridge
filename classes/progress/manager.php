@@ -590,6 +590,209 @@ class manager {
     }
 
     /**
+     * Returns one media progress row per requested user.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer activity instance id.
+     * @param string $mediahash Stable media hash.
+     * @param array $userids Learner ids.
+     * @return stdClass[] Progress rows indexed by user id.
+     */
+    public static function get_progress_batch(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        array $userids
+    ): array {
+        $matrix = self::get_progress_bulk($contextid, $component, $itemid, [$mediahash], $userids);
+        $result = [];
+        foreach ($matrix as $userid => $records) {
+            if (isset($records[$mediahash])) {
+                $result[(int)$userid] = $records[$mediahash];
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the latest stored session timestamp for each requested learner.
+     *
+     * @return int[] Timestamps indexed by user id.
+     */
+    public static function get_latest_session_times(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        array $userids
+    ): array {
+        global $DB;
+
+        $userids = array_values(array_unique(array_filter(array_map('intval', $userids))));
+        if (!$userids) {
+            return [];
+        }
+
+        [$usersql, $userparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'sessionuser');
+        $params = [
+            'contextid' => $contextid,
+            'component' => clean_param($component, PARAM_COMPONENT),
+            'itemid' => $itemid,
+            'mediahash' => $mediahash,
+        ] + $userparams;
+
+        $sql = "SELECT userid, MAX(timemodified) AS lastsession
+                  FROM {local_video_bridge_session}
+                 WHERE contextid = :contextid
+                   AND component = :component
+                   AND itemid = :itemid
+                   AND mediahash = :mediahash
+                   AND userid {$usersql}
+              GROUP BY userid";
+
+        $result = [];
+        foreach ($DB->get_records_sql($sql, $params) as $record) {
+            $result[(int)$record->userid] = (int)$record->lastsession;
+        }
+        return $result;
+    }
+
+    /**
+     * Registers a watched-percentage threshold for a consumer.
+     */
+    public static function register_threshold(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        int $threshold,
+        string $ownercomponent = ''
+    ): int {
+        global $DB;
+
+        $component = clean_param($component, PARAM_COMPONENT);
+        $ownercomponent = clean_param($ownercomponent ?: $component, PARAM_COMPONENT);
+        $threshold = max(1, min(100, $threshold));
+        $params = [
+            'contextid' => $contextid,
+            'component' => $component,
+            'itemid' => $itemid,
+            'mediahash' => $mediahash,
+            'threshold' => $threshold,
+            'ownercomponent' => $ownercomponent,
+        ];
+
+        $existing = $DB->get_record('local_video_bridge_threshold', $params, 'id');
+        if ($existing) {
+            return (int)$existing->id;
+        }
+
+        return (int)$DB->insert_record('local_video_bridge_threshold', (object)($params + [
+            'timecreated' => time(),
+        ]));
+    }
+
+    /**
+     * Compatibility alias for consumers using set_threshold().
+     */
+    public static function set_threshold(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        int $threshold,
+        string $ownercomponent = ''
+    ): int {
+        return self::register_threshold(
+            $contextid,
+            $component,
+            $itemid,
+            $mediahash,
+            $threshold,
+            $ownercomponent
+        );
+    }
+
+    /**
+     * Tests whether authoritative progress has reached a threshold.
+     */
+    public static function has_reached(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        int $userid,
+        int $threshold
+    ): bool {
+        $progress = self::get_progress($contextid, $component, $itemid, $mediahash, $userid);
+        return $progress && (int)$progress->percent >= max(1, min(100, $threshold));
+    }
+
+    /**
+     * Emits public events after an authoritative progress update.
+     */
+    public static function trigger_progress_events(
+        context_module $context,
+        stdClass $progress,
+        int $previouspercent
+    ): void {
+        global $DB;
+
+        $currentpercent = (int)$progress->percent;
+        if ($currentpercent === $previouspercent) {
+            return;
+        }
+
+        $baseother = [
+            'component' => (string)$progress->component,
+            'itemid' => (int)$progress->itemid,
+            'source' => (string)$progress->source,
+            'mediahash' => (string)$progress->mediahash,
+            'previouspercent' => $previouspercent,
+            'percent' => $currentpercent,
+        ];
+
+        \local_video_bridge\event\progress_updated::create([
+            'objectid' => (int)$progress->id,
+            'context' => $context,
+            'relateduserid' => (int)$progress->userid,
+            'other' => $baseother,
+        ])->trigger();
+
+        $thresholds = $DB->get_records('local_video_bridge_threshold', [
+            'contextid' => (int)$progress->contextid,
+            'component' => (string)$progress->component,
+            'itemid' => (int)$progress->itemid,
+            'mediahash' => (string)$progress->mediahash,
+        ]);
+        foreach ($thresholds as $registered) {
+            $threshold = (int)$registered->threshold;
+            if ($previouspercent < $threshold && $currentpercent >= $threshold) {
+                \local_video_bridge\event\progress_threshold_reached::create([
+                    'objectid' => (int)$progress->id,
+                    'context' => $context,
+                    'relateduserid' => (int)$progress->userid,
+                    'other' => $baseother + [
+                        'threshold' => $threshold,
+                        'ownercomponent' => (string)$registered->ownercomponent,
+                    ],
+                ])->trigger();
+            }
+        }
+
+        if ($previouspercent < 100 && $currentpercent >= 100) {
+            \local_video_bridge\event\video_completed::create([
+                'objectid' => (int)$progress->id,
+                'context' => $context,
+                'relateduserid' => (int)$progress->userid,
+                'other' => $baseother,
+            ])->trigger();
+        }
+    }
+
+    /**
      * Returns or creates one consolidated progress row.
      *
      * @param int $contextid Context id.
