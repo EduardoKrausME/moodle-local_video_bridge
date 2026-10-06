@@ -100,3 +100,5 @@ $string['subplugintype_videoprogresssource'] = 'Fonte de vídeo';
 $string['subplugintype_videoprogresssource_plural'] = 'Fontes de vídeo';
 
 $string['eventanalyticsupdated'] = 'Analytics de vídeo atualizados';
+
+$string['privacy:metadata:session:events'] = 'Eventos compactos e ordenados de reprodução registrados para a sessão.';
