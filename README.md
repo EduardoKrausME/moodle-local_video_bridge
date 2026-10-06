@@ -97,3 +97,36 @@ Consumers that need more than the lightweight viewing map can request `detailed`
 `local_video_bridge\analytics\manager` exposes provider-independent facts such as watched percentage, unique watched time, playback time, real session time, maximum and average playback rate, forward/backward seeks, largest forward seek, pause count, session count, end reached, watched ranges, continuous playback blocks and inactivity gaps.
 
 The analytics manager returns facts only. Completion policies, required segments, penalties and other pedagogical rules belong in the consumer activity.
+
+
+## Multi-media consumers
+
+Activities that contain several independent videos inside the same module instance should use
+`local_video_bridge\media\config` and `source\manager::get_player_config_for_media()`.
+The media item id becomes part of the media identity, so two items configured with the same
+provider/media still have independent progress, resume position, uploaded files and captions.
+
+```php
+$media = new \local_video_bridge\media\config(
+    source: $item->source,
+    sourceconfig: $item->sourceconfig,
+    mediaid: (int)$item->id
+);
+
+$consumer = new \local_video_bridge\progress\consumer(
+    'mod_example',
+    (int)$activity->id
+);
+
+$player = $manager->get_player_config_for_media(
+    $media,
+    $context,
+    $consumer,
+    requiredcapabilities: ['tracking']
+);
+```
+
+Multi-media reports should use `progress\manager::get_progress_bulk()`, which loads a
+user × media matrix with one query rather than issuing a query for every table cell. The
+bridge remains the owner of viewing maps and normalized progress; consumer plugins only
+store their own media catalog and pedagogical/compliance rules.
