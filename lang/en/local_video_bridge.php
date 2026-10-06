@@ -63,6 +63,21 @@ $string['privacy:metadata:progress:source'] = 'The Video Bridge source used to p
 $string['privacy:metadata:progress:timecreated'] = 'When the progress record was created.';
 $string['privacy:metadata:progress:timemodified'] = 'When the progress record was last updated.';
 $string['privacy:metadata:progress:userid'] = 'The user whose playback progress is stored.';
+
+$string['privacy:metadata:session'] = 'Video Bridge stores compact playback session telemetry for analytics consumers.';
+$string['privacy:metadata:session:component'] = 'The Moodle component using the video.';
+$string['privacy:metadata:session:contextid'] = 'The module context in which the video was shown.';
+$string['privacy:metadata:session:endedat'] = 'When the playback session ended.';
+$string['privacy:metadata:session:itemid'] = 'The consumer activity instance id.';
+$string['privacy:metadata:session:mediahash'] = 'The non-reversible media identifier.';
+$string['privacy:metadata:session:ranges'] = 'Compact watched ranges when detailed telemetry is enabled.';
+$string['privacy:metadata:session:sessionid'] = 'A random identifier for the playback session.';
+$string['privacy:metadata:session:startedat'] = 'When the playback session started.';
+$string['privacy:metadata:session:timemodified'] = 'When the compact session snapshot was last updated.';
+$string['privacy:metadata:session:userid'] = 'The user whose playback session is stored.';
+$string['privacy:metadata:session:watchtime'] = 'Estimated real playback time in the session.';
+$string['privacy:sessions'] = 'Video playback sessions';
+
 $string['privacy:progress'] = 'Video playback progress';
 $string['progressmap'] = 'Your viewing map';
 $string['progresssaveerror'] = 'Video progress could not be saved.';
