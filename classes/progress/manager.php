@@ -176,7 +176,7 @@ class manager {
     }
 
     /**
-     * Loads a user x media progress matrix with one database query.
+     * Loads a user x media progress matrix with bounded bulk queries.
      *
      * The returned array is indexed as [userid][mediahash].
      *
@@ -202,26 +202,44 @@ class manager {
             return [];
         }
 
-        [$hashsql, $hashparams] = $DB->get_in_or_equal($mediahashes, SQL_PARAMS_NAMED, 'mh');
-        [$usersql, $userparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
-        $params = [
-            'contextid' => $contextid,
-            'component' => clean_param($component, PARAM_COMPONENT),
-            'itemid' => $itemid,
-        ] + $hashparams + $userparams;
-
-        $sql = "SELECT *
-                  FROM {local_video_bridge_progress}
-                 WHERE contextid = :contextid
-                   AND component = :component
-                   AND itemid = :itemid
-                   AND mediahash {$hashsql}
-                   AND userid {$usersql}";
-
+        $component = clean_param($component, PARAM_COMPONENT);
         $result = [];
-        foreach ($DB->get_records_sql($sql, $params) as $record) {
-            $result[(int)$record->userid][(string)$record->mediahash] = $record;
+        $queryindex = 0;
+
+        // Keep bind counts bounded for large compliance matrices while preserving bulk loading.
+        foreach (array_chunk($mediahashes, 100) as $hashchunk) {
+            foreach (array_chunk($userids, 500) as $userchunk) {
+                [$hashsql, $hashparams] = $DB->get_in_or_equal(
+                    $hashchunk,
+                    SQL_PARAMS_NAMED,
+                    'bridgehash' . $queryindex
+                );
+                [$usersql, $userparams] = $DB->get_in_or_equal(
+                    $userchunk,
+                    SQL_PARAMS_NAMED,
+                    'bridgeuser' . $queryindex
+                );
+                $params = [
+                    'contextid' => $contextid,
+                    'component' => $component,
+                    'itemid' => $itemid,
+                ] + $hashparams + $userparams;
+
+                $sql = "SELECT *
+                          FROM {local_video_bridge_progress}
+                         WHERE contextid = :contextid
+                           AND component = :component
+                           AND itemid = :itemid
+                           AND mediahash {$hashsql}
+                           AND userid {$usersql}";
+
+                foreach ($DB->get_records_sql($sql, $params) as $record) {
+                    $result[(int)$record->userid][(string)$record->mediahash] = $record;
+                }
+                $queryindex++;
+            }
         }
+
         return $result;
     }
 
@@ -364,6 +382,36 @@ class manager {
             static fn($record): int => (int)$record->userid,
             $records
         )));
+    }
+
+    /**
+     * Deletes bridge-owned progress and telemetry for one media identity.
+     *
+     * Multi-media consumers should call this when an item is deleted or its
+     * provider configuration changes and therefore produces a new media hash.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer activity instance id.
+     * @param string $mediahash Stable media hash.
+     * @return void
+     */
+    public static function delete_consumer_media(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash
+    ): void {
+        global $DB;
+
+        $params = [
+            'contextid' => $contextid,
+            'component' => clean_param($component, PARAM_COMPONENT),
+            'itemid' => $itemid,
+            'mediahash' => $mediahash,
+        ];
+        $DB->delete_records('local_video_bridge_progress', $params);
+        $DB->delete_records('local_video_bridge_session', $params);
     }
 
     /**
