@@ -25,6 +25,7 @@
 namespace local_video_bridge\progress;
 
 use context_module;
+use local_video_bridge\media\config as media_config;
 use stdClass;
 
 /**
@@ -92,6 +93,58 @@ class manager {
     }
 
     /**
+     * Builds progress configuration for one media item in a multi-media consumer.
+     *
+     * @param context_module $context Module context.
+     * @param consumer $consumer Consumer identity.
+     * @param media_config $media Media configuration.
+     * @param string $telemetrylevel Telemetry detail level.
+     * @return array
+     */
+    public static function build_config_for_media(
+        context_module $context,
+        consumer $consumer,
+        media_config $media,
+        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC
+    ): array {
+        global $CFG, $USER;
+
+        $telemetrylevel = \local_video_bridge\analytics::normalise_level($telemetrylevel);
+        if (!isloggedin() || isguestuser() || $telemetrylevel === \local_video_bridge\analytics::LEVEL_OFF) {
+            return ['enabled' => false, 'telemetrylevel' => $telemetrylevel];
+        }
+
+        $mediahash = $media->get_mediahash();
+        $progress = self::get_or_create(
+            $context->id,
+            $consumer->get_component(),
+            $consumer->get_itemid(),
+            $media->get_source(),
+            $mediahash,
+            (int)$USER->id
+        );
+
+        return [
+            'enabled' => true,
+            'endpoint' => $CFG->wwwroot . '/local/video_bridge/progress.php',
+            'sesskey' => sesskey(),
+            'contextid' => $context->id,
+            'component' => $consumer->get_component(),
+            'itemid' => $consumer->get_itemid(),
+            'mediaid' => $media->get_mediaid(),
+            'source' => $media->get_source(),
+            'mediahash' => $mediahash,
+            'currenttime' => (int)$progress->currenttime,
+            'duration' => (int)$progress->duration,
+            'percent' => (int)$progress->percent,
+            'map' => self::decode_map((string)$progress->map),
+            'saveinterval' => self::SAVE_INTERVAL_MS,
+            'label' => get_string('progressmap', 'local_video_bridge'),
+            'telemetrylevel' => $telemetrylevel,
+        ];
+    }
+
+    /**
      * Returns consolidated progress for reports or consumer activity logic.
      *
      * @param int $contextid Context id.
@@ -119,6 +172,56 @@ class manager {
         ]);
 
         return $record ?: null;
+    }
+
+    /**
+     * Loads a user x media progress matrix with one database query.
+     *
+     * The returned array is indexed as [userid][mediahash].
+     *
+     * @param int $contextid Context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer activity instance id.
+     * @param array $mediahashes Media hashes.
+     * @param array $userids User ids.
+     * @return array Nested progress records.
+     */
+    public static function get_progress_bulk(
+        int $contextid,
+        string $component,
+        int $itemid,
+        array $mediahashes,
+        array $userids
+    ): array {
+        global $DB;
+
+        $mediahashes = array_values(array_unique(array_filter(array_map('strval', $mediahashes))));
+        $userids = array_values(array_unique(array_filter(array_map('intval', $userids))));
+        if (!$mediahashes || !$userids) {
+            return [];
+        }
+
+        [$hashsql, $hashparams] = $DB->get_in_or_equal($mediahashes, SQL_PARAMS_NAMED, 'mh');
+        [$usersql, $userparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'uid');
+        $params = [
+            'contextid' => $contextid,
+            'component' => clean_param($component, PARAM_COMPONENT),
+            'itemid' => $itemid,
+        ] + $hashparams + $userparams;
+
+        $sql = "SELECT *
+                  FROM {local_video_bridge_progress}
+                 WHERE contextid = :contextid
+                   AND component = :component
+                   AND itemid = :itemid
+                   AND mediahash {$hashsql}
+                   AND userid {$usersql}";
+
+        $result = [];
+        foreach ($DB->get_records_sql($sql, $params) as $record) {
+            $result[(int)$record->userid][(string)$record->mediahash] = $record;
+        }
+        return $result;
     }
 
     /**
