@@ -79,6 +79,15 @@ final class save_progress extends external_api {
             throw new invalid_parameter_exception('Invalid progress bucket list.');
         }
 
+        $previousprogress = progress_manager::get_progress(
+            $context->id,
+            $params['component'],
+            $params['itemid'],
+            $params['mediahash'],
+            (int)$USER->id
+        );
+        $previouspercent = $previousprogress ? (int)$previousprogress->percent : 0;
+
         $progress = progress_manager::save(
             $context->id,
             $params['component'],
@@ -99,6 +108,8 @@ final class save_progress extends external_api {
             if (!is_array($decodedtelemetry)) {
                 throw new invalid_parameter_exception('Invalid Video Bridge telemetry payload.');
             }
+            $decodedtelemetry['_serverpercentstart'] = $previouspercent;
+            $decodedtelemetry['_serverpercentend'] = (int)$progress->percent;
             telemetry_manager::save_session(
                 $context,
                 $params['component'],
