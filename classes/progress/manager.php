@@ -225,6 +225,55 @@ class manager {
     }
 
     /**
+     * Returns the stable media identity used by Video Bridge progress rows.
+     *
+     * @param string $source Source short name.
+     * @param string $sourceconfig Normalized source configuration.
+     * @return string SHA-256 media hash.
+     */
+    public static function media_hash(string $source, string $sourceconfig = ''): string {
+        return hash('sha256', $source . '|' . $sourceconfig);
+    }
+
+    /**
+     * Returns progress rows for one consumer activity without exposing table details to consumers.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer activity instance id.
+     * @param string $mediahash Stable media hash.
+     * @param array|null $userids Optional learner ids to restrict the result.
+     * @return stdClass[] Progress rows indexed by record id.
+     */
+    public static function get_activity_progress(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        ?array $userids = null
+    ): array {
+        global $DB;
+
+        $params = [
+            'contextid' => $contextid,
+            'component' => clean_param($component, PARAM_COMPONENT),
+            'itemid' => $itemid,
+            'mediahash' => $mediahash,
+        ];
+        $where = 'contextid = :contextid AND component = :component AND itemid = :itemid AND mediahash = :mediahash';
+        if ($userids !== null) {
+            $userids = array_values(array_unique(array_map('intval', $userids)));
+            if (!$userids) {
+                return [];
+            }
+            [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'bridgeuser');
+            $where .= " AND userid {$insql}";
+            $params += $inparams;
+        }
+        return $DB->get_records_select('local_video_bridge_progress', $where, $params, 'userid ASC');
+    }
+
+    /**
      * Merges a batch of watched buckets and recalculates authoritative progress.
      *
      * @param int $contextid Context id.
