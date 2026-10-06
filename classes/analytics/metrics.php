@@ -101,28 +101,28 @@ final class metrics {
         $value = new self();
         $value->percent = (int)round(max(0, min(100, (float)($facts['percent_watched'] ?? 0))));
         $value->duration = (int)round(max(0, (float)($facts['duration'] ?? 0)));
-        $value->unique_watch_time = (int)round(max(0, (float)($facts['unique_watch_time'] ?? 0)));
-        $value->playback_time = (int)round(max(0, (float)($facts['playback_time'] ?? 0)));
-        $value->session_time = (int)round(max(0, (float)($facts['real_session_time'] ?? 0)));
+        $value->uniquewatchtime = (int)round(max(0, (float)($facts['unique_watch_time'] ?? 0)));
+        $value->playbacktime = (int)round(max(0, (float)($facts['playback_time'] ?? 0)));
+        $value->sessiontime = (int)round(max(0, (float)($facts['real_session_time'] ?? 0)));
         $value->sessions = max(0, (int)($facts['session_count'] ?? 0));
-        $value->pause_count = max(0, (int)($facts['pause_count'] ?? 0));
-        $value->seeks_forward = max(0, (int)($facts['seeks_forward'] ?? 0));
-        $value->seeks_backward = max(0, (int)($facts['seeks_backward'] ?? 0));
-        $value->seek_count = $value->seeks_forward + $value->seeks_backward;
-        $value->replay_count = $value->seeks_backward;
-        $value->max_rate = max(0.1, (float)($facts['maximum_playback_rate'] ?? 1));
-        $value->average_rate = max(0.1, (float)($facts['average_playback_rate'] ?? 1));
-        $value->reached_end = !empty($facts['reached_end']);
-        $value->watched_ranges = is_array($facts['watched_ranges'] ?? null) ? $facts['watched_ranges'] : [];
-        $value->last_position = (int)round(max(0, (float)($facts['current_position'] ?? 0)));
-        $value->regularity = $value->session_time > 0
-            ? round(min(100, ($value->playback_time / $value->session_time) * 100), 2)
+        $value->pausecount = max(0, (int)($facts['pause_count'] ?? 0));
+        $value->seeksforward = max(0, (int)($facts['seeks_forward'] ?? 0));
+        $value->seeksbackward = max(0, (int)($facts['seeks_backward'] ?? 0));
+        $value->seekcount = $value->seeksforward + $value->seeksbackward;
+        $value->replaycount = $value->seeksbackward;
+        $value->maxrate = max(0.1, (float)($facts['maximum_playback_rate'] ?? 1));
+        $value->averagerate = max(0.1, (float)($facts['average_playback_rate'] ?? 1));
+        $value->reachedend = !empty($facts['reached_end']);
+        $value->watchedranges = is_array($facts['watched_ranges'] ?? null) ? $facts['watched_ranges'] : [];
+        $value->lastposition = (int)round(max(0, (float)($facts['current_position'] ?? 0)));
+        $value->regularity = $value->sessiontime > 0
+            ? round(min(100, ($value->playbacktime / $value->sessiontime) * 100), 2)
             : 0.0;
-        $value->largest_forward_seek = max(0, (float)($facts['largest_forward_seek'] ?? 0));
-        $value->continuous_blocks = is_array($facts['continuous_blocks'] ?? null)
+        $value->largestforwardseek = max(0, (float)($facts['largest_forward_seek'] ?? 0));
+        $value->continuousblocks = is_array($facts['continuous_blocks'] ?? null)
             ? $facts['continuous_blocks']
             : [];
-        $value->inactivity_gaps = is_array($facts['inactivity_gaps'] ?? null)
+        $value->inactivitygaps = is_array($facts['inactivity_gaps'] ?? null)
             ? $facts['inactivity_gaps']
             : [];
         return $value;
@@ -137,24 +137,24 @@ final class metrics {
         return [
             'percent' => $this->percent,
             'duration' => $this->duration,
-            'uniqueWatchTime' => $this->unique_watch_time,
-            'playbackTime' => $this->playback_time,
-            'sessionTime' => $this->session_time,
+            'uniqueWatchTime' => $this->uniquewatchtime,
+            'playbackTime' => $this->playbacktime,
+            'sessionTime' => $this->sessiontime,
             'sessions' => $this->sessions,
-            'pauseCount' => $this->pause_count,
-            'seekCount' => $this->seek_count,
-            'replayCount' => $this->replay_count,
-            'maxRate' => $this->max_rate,
-            'averageRate' => $this->average_rate,
-            'reachedEnd' => $this->reached_end,
-            'watchedRanges' => $this->watched_ranges,
-            'lastPosition' => $this->last_position,
+            'pauseCount' => $this->pausecount,
+            'seekCount' => $this->seekcount,
+            'replayCount' => $this->replaycount,
+            'maxRate' => $this->maxrate,
+            'averageRate' => $this->averagerate,
+            'reachedEnd' => $this->reachedend,
+            'watchedRanges' => $this->watchedranges,
+            'lastPosition' => $this->lastposition,
             'regularity' => $this->regularity,
-            'seeksForward' => $this->seeks_forward,
-            'seeksBackward' => $this->seeks_backward,
-            'largestForwardSeek' => $this->largest_forward_seek,
-            'continuousBlocks' => $this->continuous_blocks,
-            'inactivityGaps' => $this->inactivity_gaps,
+            'seeksForward' => $this->seeksforward,
+            'seeksBackward' => $this->seeksbackward,
+            'largestForwardSeek' => $this->largestforwardseek,
+            'continuousBlocks' => $this->continuousblocks,
+            'inactivityGaps' => $this->inactivitygaps,
         ];
     }
 }
