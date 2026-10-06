@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(["jquery"], function ($) {
+define(["jquery", "local_video_bridge/progress"], function ($, Progress) {
     /**
      * Provides the common player adapter contract for HTML5 video and native HLS playback.
      */
@@ -76,7 +76,7 @@ define(["jquery"], function ($) {
             });
             return new Promise((resolve) => {
                 if (this.video.readyState >= 1) {
-                    resolve(this);
+                    resolve(Progress.attach(this, this.root, this.config));
                 } else {
                     this.video.addEventListener('loadedmetadata', () => resolve(this), {once: true});
                 }
