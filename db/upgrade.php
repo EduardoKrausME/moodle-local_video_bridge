@@ -266,5 +266,24 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026100610, 'local', 'video_bridge');
     }
 
+    if ($oldversion < 2026100611) {
+        $dbman = $DB->get_manager();
+        $table = new xmldb_table('local_video_bridge_session');
+        $indexes = [
+            new xmldb_index('consumer_user', XMLDB_INDEX_NOTUNIQUE, ['component', 'itemid', 'userid']),
+            new xmldb_index('consumer_time', XMLDB_INDEX_NOTUNIQUE, ['component', 'itemid', 'timecreated']),
+            new xmldb_index('user_session', XMLDB_INDEX_NOTUNIQUE, ['userid', 'sessionid']),
+            new xmldb_index('mediahash_idx', XMLDB_INDEX_NOTUNIQUE, ['mediahash']),
+        ];
+        if ($dbman->table_exists($table)) {
+            foreach ($indexes as $index) {
+                if (!$dbman->index_exists($table, $index)) {
+                    $dbman->add_index($table, $index);
+                }
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026100611, 'local', 'video_bridge');
+    }
+
     return true;
 }
