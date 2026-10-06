@@ -25,11 +25,17 @@
 defined('MOODLE_INTERNAL') || die;
 
 $string['browservideonotsupported'] = 'Seu navegador não oferece suporte à reprodução de vídeo HTML5.';
+$string['captionpluginmissing'] = 'A fonte de legenda "{$a}" não está instalada ou não está disponível.';
+$string['captionsources'] = 'Fontes de legenda';
+$string['captionsources_desc'] = 'Adaptadores compartilhados de fontes de legenda usados pelos plugins de vídeo do Moodle.';
+$string['invalidcaptionplugin'] = 'A fonte de legenda "{$a}" é inválida e foi ignorada.';
 $string['invalidsourceplugin'] = 'A fonte de vídeo "{$a}" é inválida e foi ignorada.';
 $string['pluginname'] = 'Video Bridge';
 $string['privacy:metadata'] = 'O Video Bridge não armazena dados pessoais por conta própria. Plugins consumidores e subplugins de fonte podem armazenar configurações ou arquivos no contexto de suas atividades.';
 $string['sourcepluginmissing'] = 'A fonte de vídeo "{$a}" não está instalada ou não está disponível.';
 $string['sources'] = 'Fontes de vídeo';
 $string['sources_desc'] = 'Adaptadores compartilhados de fontes de vídeo usados pelos plugins de vídeo do Moodle.';
+$string['subplugintype_videocaptionsource'] = 'Fonte de legenda';
+$string['subplugintype_videocaptionsource_plural'] = 'Fontes de legenda';
 $string['subplugintype_videoprogresssource'] = 'Fonte de vídeo';
 $string['subplugintype_videoprogresssource_plural'] = 'Fontes de vídeo';

@@ -16,6 +16,8 @@ Bundled sources:
 - OTTFlix;
 - generic/cooperative iframe embed.
 
+Caption providers are also extensible through the `videocaptionsource` subplugin type. The bundled upload provider stores protected WebVTT captions in Moodle, accepts VTT/SRT input and can expose multiple normalized tracks to any consumer.
+
 The source plugins keep the historical `videoprogresssource_*` component prefix so existing source configuration and backups do not become a second set of Moodle plugins. Despite that technical prefix, discovery, shared adapters and runtime assets belong to `local_video_bridge` and may be consumed by any activity.
 
 Consumers use `local_video_bridge\source\manager`. By default it expects `videosource`, `sourceconfig` and `videourl`, but different field names can be passed to the constructor.
@@ -39,3 +41,6 @@ A provider also declares the capabilities a consumer may rely on: `tracking`, `s
 Every AMD adapter still exposes the same safe calling surface: `play()`, `pause()`, `getCurrentTime()`, `getDuration()`, `getPlaybackRate()`, `seek()`, and normalized event registration methods. For unsupported capabilities those methods are best-effort/no-op and consumers must use the provider capability flags before making a feature mandatory.
 
 HLS and Vimeo runtime libraries are shipped by Video Bridge, so a consumer never needs files from `mod_videoprogress`.
+
+
+Caption consumers use `local_video_bridge\caption\manager`. By default it expects `captionsource` and `captionconfig`, but consumers may map those aliases to their own schema. Caption providers return browser-ready tracks with `url`, `language`, `label` and `isdefault`.

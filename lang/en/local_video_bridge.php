@@ -25,10 +25,14 @@
 defined('MOODLE_INTERNAL') || die;
 
 $string['browservideonotsupported'] = 'Your browser does not support HTML5 video playback.';
+$string['captionpluginmissing'] = 'The caption source "{$a}" is not installed or is unavailable.';
+$string['captionsources'] = 'Caption sources';
+$string['captionsources_desc'] = 'Shared caption source adapters used by Moodle video plugins.';
+$string['invalidcaptionplugin'] = 'The caption source "{$a}" is invalid and was ignored.';
 $string['invalidsourceplugin'] = 'The video source "{$a}" is invalid and was ignored.';
 $string['invalidsubplugintype'] = 'Invalid Video Bridge subplugin type.';
-$string['nosubplugins'] = 'No video sources installed';
-$string['nosubpluginshelp'] = 'Install at least one compatible video source subplugin to make it available to video plugins.';
+$string['nosubplugins'] = 'No subplugins installed';
+$string['nosubpluginshelp'] = 'Install at least one compatible Video Bridge subplugin to make it available to video plugins.';
 $string['pluginadministration'] = 'Video Bridge administration';
 $string['plugincomponent'] = 'Component';
 $string['pluginname'] = 'Video Bridge';
@@ -42,6 +46,8 @@ $string['sourcepluginmissing'] = 'The video source "{$a}" is not installed or is
 $string['sources'] = 'Video sources';
 $string['sources_desc'] = 'Shared video source adapters used by Moodle video plugins.';
 $string['subplugininuse'] = 'In use or required';
+$string['subplugintype_videocaptionsource'] = 'Caption source';
+$string['subplugintype_videocaptionsource_plural'] = 'Caption sources';
 $string['subplugintype_videoprogresssource'] = 'Video source';
 $string['subplugintype_videoprogresssource_plural'] = 'Video sources';
 $string['unknown'] = 'Not provided';

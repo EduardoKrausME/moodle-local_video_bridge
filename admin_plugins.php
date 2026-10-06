@@ -31,6 +31,10 @@ $types = [
         'title' => 'subplugintype_videoprogresssource_plural',
         'description' => 'sources_desc',
     ],
+    'videocaptionsource' => [
+        'title' => 'subplugintype_videocaptionsource_plural',
+        'description' => 'captionsources_desc',
+    ],
 ];
 
 if (!isset($types[$type])) {

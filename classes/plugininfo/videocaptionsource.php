@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin information for shared video source subplugins.
+ * Plugin information for shared caption source subplugins.
  *
  * @package   local_video_bridge
  * @copyright 2026 Eduardo Kraus
@@ -30,59 +30,23 @@ use moodle_url;
 use part_of_admin_tree;
 
 /**
- * Describes Video Bridge source subplugins to Moodle's plugin manager.
+ * Describes Video Bridge caption source subplugins to Moodle's plugin manager.
  */
-class videoprogresssource extends base {
-    /**
-     * Prevents removal of providers distributed as part of Video Bridge.
-     *
-     * @return bool Whether Moodle may offer the uninstall action.
-     */
+class videocaptionsource extends base {
     public function is_uninstall_allowed(): bool {
-        $bundled = [
-            'upload',
-            'url',
-            'youtube',
-            'vimeo',
-            'nextcloud',
-            'drive',
-            'pandavideo',
-            'bunnystream',
-            'qencode',
-            'ottflix',
-            'embed',
-        ];
-        return !in_array($this->name, $bundled, true);
+        return $this->name !== 'upload';
     }
 
-    /**
-     * Returns the Video Bridge administration page.
-     *
-     * @return moodle_url Management URL.
-     */
     public static function get_manage_url(): moodle_url {
         return new moodle_url('/local/video_bridge/admin_plugins.php', [
-            'type' => 'videoprogresssource',
+            'type' => 'videocaptionsource',
         ]);
     }
 
-    /**
-     * Returns the source-specific settings section name.
-     *
-     * @return string Settings section name.
-     */
     public function get_settings_section_name(): string {
         return $this->type . '_' . $this->name;
     }
 
-    /**
-     * Loads an optional source settings.php into the administration tree.
-     *
-     * @param part_of_admin_tree $adminroot Administration tree.
-     * @param string $parentnodename Parent node name.
-     * @param bool $hassiteconfig Whether the user may configure the site.
-     * @return void
-     */
     public function load_settings(part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig): void {
         if (!$this->is_installed_and_upgraded() || !$hassiteconfig ||
                 !file_exists($this->full_path('settings.php'))) {

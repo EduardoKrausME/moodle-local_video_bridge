@@ -23,7 +23,7 @@
  */
 
 /**
- * Serves protected uploaded videos owned by Video Bridge.
+ * Serves protected uploaded videos and captions owned by Video Bridge.
  *
  * @package local_video_bridge
  * @param stdClass $course Course record.
@@ -37,7 +37,7 @@
  */
 function local_video_bridge_pluginfile($course, $cm, context $context, string $filearea, array $args,
         bool $forcedownload, array $options = []): bool {
-    if (!$context instanceof context_module || !$cm || $filearea !== 'video') {
+    if (!$context instanceof context_module || !$cm || !in_array($filearea, ['video', 'caption'], true)) {
         send_file_not_found();
     }
 
