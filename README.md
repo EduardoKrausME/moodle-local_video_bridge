@@ -88,3 +88,12 @@ $player = $manager->get_player_config(
 Detailed telemetry never stores one row per `timeupdate`. One session row is updated in place and watched intervals are compacted, for example `[[0,42],[44,103],[98,160]]`.
 
 Analytics consumers should use the public methods `local_video_bridge\analytics::media_hash()`, `get_watched_ranges()`, `get_session_metrics()` and `get_activity_coverage()`. Direct reads from Video Bridge internal tables are intentionally unnecessary.
+
+
+## Optional detailed analytics
+
+Consumers that need more than the lightweight viewing map can request `detailed` telemetry when calling `local_video_bridge\source\manager::get_player_config()`. Detailed telemetry is optional so ordinary video activities do not create unnecessary session data.
+
+`local_video_bridge\analytics\manager` exposes provider-independent facts such as watched percentage, unique watched time, playback time, real session time, maximum and average playback rate, forward/backward seeks, largest forward seek, pause count, session count, end reached, watched ranges, continuous playback blocks and inactivity gaps.
+
+The analytics manager returns facts only. Completion policies, required segments, penalties and other pedagogical rules belong in the consumer activity.
