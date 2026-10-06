@@ -65,3 +65,26 @@ The tracker keeps watched buckets in browser memory, persists them at most once 
 Progress is stored per module context, consumer component, activity instance, media hash and user. Videos longer than 100 seconds use 100 normalized buckets; shorter videos use approximately one bucket per second. The server calculates the authoritative percentage from the merged map and never trusts a percentage supplied by the browser.
 
 `local_video_bridge\progress\manager` exposes the consolidated state for reports or activity logic, including current position, duration, watched percentage and normalized map.
+
+
+## Telemetry and analytics API
+
+Video Bridge exposes three telemetry levels for consumers:
+
+- `OFF`: no playback progress or session telemetry is persisted;
+- `BASIC`: authoritative normalized progress plus compact session metrics;
+- `DETAILED`: BASIC plus compact watched ranges and positional pause/skip/replay data.
+
+Consumers opt in while building the shared player:
+
+```php
+$player = $manager->get_player_config(
+    $activity,
+    $context,
+    \local_video_bridge\analytics::LEVEL_DETAILED
+);
+```
+
+Detailed telemetry never stores one row per `timeupdate`. One session row is updated in place and watched intervals are compacted, for example `[[0,42],[44,103],[98,160]]`.
+
+Analytics consumers should use the public methods `local_video_bridge\analytics::media_hash()`, `get_watched_ranges()`, `get_session_metrics()` and `get_activity_coverage()`. Direct reads from Video Bridge internal tables are intentionally unnecessary.
