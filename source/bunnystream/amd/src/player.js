@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define([], function() {
+define(['local_video_bridge/progress'], function(Progress) {
     let apiPromise;
 
     const loadApi = (url) => {
@@ -163,6 +163,7 @@ define([], function() {
         }
     }
 
-    const create = (root, config) => (new BunnyStreamAdapter(root, config)).initialise();
+    const create = (root, config) => (new BunnyStreamAdapter(root, config)).initialise()
+        .then((adapter) => Progress.attach(adapter, root, config));
     return {create: create};
 });
