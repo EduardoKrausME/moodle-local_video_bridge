@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(["jquery"], function ($) {
+define(["jquery", "local_video_bridge/progress"], function ($, Progress) {
     let apiPromise;
     const loadApi = (url) => {
         if (window.Vimeo && window.Vimeo.Player) {
@@ -229,6 +229,7 @@ define(["jquery"], function ($) {
         }
     }
 
-    const create = (root, config) => (new VimeoAdapter(root, config)).initialise();
+    const create = (root, config) => (new VimeoAdapter(root, config)).initialise()
+        .then((adapter) => Progress.attach(adapter, root, config));
     return {create: create};
 });
