@@ -255,23 +255,50 @@ class manager {
     ): array {
         global $DB;
 
-        $params = [
+        $baseparams = [
             'contextid' => $contextid,
             'component' => clean_param($component, PARAM_COMPONENT),
             'itemid' => $itemid,
             'mediahash' => $mediahash,
         ];
-        $where = 'contextid = :contextid AND component = :component AND itemid = :itemid AND mediahash = :mediahash';
-        if ($userids !== null) {
-            $userids = array_values(array_unique(array_map('intval', $userids)));
-            if (!$userids) {
-                return [];
-            }
-            [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'bridgeuser');
-            $where .= " AND userid {$insql}";
-            $params += $inparams;
+        $basewhere = 'contextid = :contextid AND component = :component ' .
+            'AND itemid = :itemid AND mediahash = :mediahash';
+
+        if ($userids === null) {
+            return $DB->get_records_select(
+                'local_video_bridge_progress',
+                $basewhere,
+                $baseparams,
+                'userid ASC'
+            );
         }
-        return $DB->get_records_select('local_video_bridge_progress', $where, $params, 'userid ASC');
+
+        $userids = array_values(array_unique(array_filter(array_map('intval', $userids))));
+        if (!$userids) {
+            return [];
+        }
+
+        $records = [];
+        foreach (array_chunk($userids, 500) as $chunkindex => $chunk) {
+            [$insql, $inparams] = $DB->get_in_or_equal(
+                $chunk,
+                SQL_PARAMS_NAMED,
+                'bridgeuser' . $chunkindex
+            );
+            foreach ($DB->get_records_select(
+                'local_video_bridge_progress',
+                $basewhere . " AND userid {$insql}",
+                $baseparams + $inparams,
+                'userid ASC'
+            ) as $id => $record) {
+                $records[$id] = $record;
+            }
+        }
+
+        uasort($records, static fn(stdClass $a, stdClass $b): int =>
+            (int)$a->userid <=> (int)$b->userid
+        );
+        return $records;
     }
 
     /**
