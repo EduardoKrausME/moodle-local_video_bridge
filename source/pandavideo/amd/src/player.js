@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define([], function() {
+define(['local_video_bridge/progress'], function(Progress) {
     class PandaAdapter {
         constructor(root, config) {
             this.root = root;
@@ -101,6 +101,6 @@ define([], function() {
             (this.handlers[name] || []).forEach((handler) => handler(...args));
         }
     }
-    const create = (root, config) => Promise.resolve(new PandaAdapter(root, config));
+    const create = (root, config) => Promise.resolve(Progress.attach(new PandaAdapter(root, config), root, config));
     return {create: create};
 });
