@@ -29,6 +29,7 @@ use context_module;
 use core_collator;
 use core_component;
 use moodle_exception;
+use local_video_bridge\media\config as media_config;
 use MoodleQuickForm;
 use stdClass;
 
@@ -249,6 +250,70 @@ class manager {
     }
 
     /**
+     * Prepares caption fields for one media item.
+     *
+     * @param array $defaultvalues Form values.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function prepare_form_data_for_media(
+        array &$defaultvalues,
+        context_module $context,
+        int $mediaid
+    ): void {
+        $source = clean_param((string)($defaultvalues[$this->sourcefield] ?? ''), PARAM_PLUGIN);
+        if ($source === '') {
+            return;
+        }
+
+        $working = $defaultvalues;
+        $working['captionsource'] = $source;
+        $working['captionconfig'] = $defaultvalues[$this->configfield] ?? '';
+        $this->get_plugin($source)->prepare_media_form_data($working, $context, $mediaid);
+        $defaultvalues = array_replace($defaultvalues, $working);
+    }
+
+    /**
+     * Saves caption files for one media item.
+     *
+     * @param stdClass $data Form data.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @param string|null $previoussource Previous source.
+     * @return void
+     */
+    public function save_files_for_media(
+        stdClass $data,
+        context_module $context,
+        int $mediaid,
+        ?string $previoussource = null
+    ): void {
+        $source = clean_param((string)($data->{$this->sourcefield} ?? ''), PARAM_PLUGIN);
+        $plugins = $this->get_plugins();
+
+        if ($previoussource && $previoussource !== $source && isset($plugins[$previoussource])) {
+            $plugins[$previoussource]->delete_media_files($context, $mediaid);
+        }
+        if ($source !== '') {
+            $this->get_plugin($source)->save_media_files($data, $context, $mediaid);
+        }
+    }
+
+    /**
+     * Deletes caption files for one media item.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function delete_files_for_media(context_module $context, int $mediaid): void {
+        foreach ($this->get_plugins() as $plugin) {
+            $plugin->delete_media_files($context, $mediaid);
+        }
+    }
+
+    /**
      * Deletes files owned by caption sources.
      *
      * @param context_module $context Module context.
@@ -291,6 +356,42 @@ class manager {
             ];
         }
 
+        return $normalized;
+    }
+
+    /**
+     * Returns normalized tracks for a generic media item.
+     *
+     * @param media_config $media Media configuration.
+     * @param context_module $context Module context.
+     * @return array Browser-ready caption tracks.
+     */
+    public function get_tracks_for_media(media_config $media, context_module $context): array {
+        $source = $media->get_captionsource();
+        if ($source === '') {
+            return [];
+        }
+
+        $tracks = $this->get_plugin($source)->get_tracks_for_media(
+            $media->to_caption_record(),
+            $context,
+            $media->get_mediaid()
+        );
+
+        $normalized = [];
+        foreach ($tracks as $track) {
+            if (!is_array($track) || empty($track['url'])) {
+                continue;
+            }
+            $language = trim((string)($track['language'] ?? 'und'));
+            $label = trim((string)($track['label'] ?? $language));
+            $normalized[] = [
+                'url' => (string)$track['url'],
+                'language' => $language !== '' ? $language : 'und',
+                'label' => $label !== '' ? $label : ($language !== '' ? $language : 'Caption'),
+                'isdefault' => !empty($track['isdefault']),
+            ];
+        }
         return $normalized;
     }
 
