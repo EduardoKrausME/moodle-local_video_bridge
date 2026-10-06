@@ -24,6 +24,7 @@
 
 require_once(__DIR__ . '/../../config.php');
 
+use local_video_bridge\analytics;
 use local_video_bridge\progress\manager;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -43,6 +44,7 @@ try {
     $currenttime = required_param('currenttime', PARAM_INT);
     $duration = required_param('duration', PARAM_INT);
     $rawbuckets = optional_param('buckets', '[]', PARAM_RAW);
+    $rawtelemetry = optional_param('telemetry', '', PARAM_RAW);
 
     if (!preg_match('/^[a-f0-9]{64}$/', $mediahash)) {
         throw new invalid_parameter_exception('Invalid media hash.');
@@ -77,6 +79,25 @@ try {
         $duration,
         $buckets
     );
+
+    if ($rawtelemetry !== '') {
+        if (strlen($rawtelemetry) > 65535) {
+            throw new invalid_parameter_exception('Video Bridge telemetry payload is too large.');
+        }
+        $telemetry = json_decode($rawtelemetry, true);
+        if (!is_array($telemetry)) {
+            throw new invalid_parameter_exception('Invalid Video Bridge telemetry payload.');
+        }
+        analytics::save_session(
+            $context,
+            $component,
+            $itemid,
+            $source,
+            $mediahash,
+            (int)$USER->id,
+            $telemetry
+        );
+    }
 
     echo json_encode([
         'success' => true,
