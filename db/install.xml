@@ -61,7 +61,7 @@
                 <FIELD NAME="speedavg" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" DECIMALS="4"/>
                 <FIELD NAME="ratechanges" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="receivedended" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-                <FIELD NAME="endreason" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="" SEQUENCE="false"/>
+                <FIELD NAME="endreason" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="active_or_unclosed" SEQUENCE="false"/>
                 <FIELD NAME="ranges" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="pausepoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="skippoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
