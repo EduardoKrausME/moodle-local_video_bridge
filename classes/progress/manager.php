@@ -465,6 +465,7 @@ class manager {
         ];
         $DB->delete_records('local_video_bridge_progress', $params);
         $DB->delete_records('local_video_bridge_session', $params);
+        $DB->delete_records('local_video_bridge_threshold', $params);
     }
 
     /**
