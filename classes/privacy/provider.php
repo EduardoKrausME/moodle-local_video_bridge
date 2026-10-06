@@ -60,6 +60,20 @@ class provider implements
             'timemodified' => 'privacy:metadata:progress:timemodified',
         ], 'privacy:metadata:progress');
 
+        $collection->add_database_table('local_video_bridge_session', [
+            'contextid' => 'privacy:metadata:session:contextid',
+            'component' => 'privacy:metadata:session:component',
+            'itemid' => 'privacy:metadata:session:itemid',
+            'mediahash' => 'privacy:metadata:session:mediahash',
+            'userid' => 'privacy:metadata:session:userid',
+            'sessionid' => 'privacy:metadata:session:sessionid',
+            'startedat' => 'privacy:metadata:session:startedat',
+            'endedat' => 'privacy:metadata:session:endedat',
+            'watchtime' => 'privacy:metadata:session:watchtime',
+            'ranges' => 'privacy:metadata:session:ranges',
+            'timemodified' => 'privacy:metadata:session:timemodified',
+        ], 'privacy:metadata:session');
+
         return $collection;
     }
 
@@ -77,6 +91,13 @@ class provider implements
 
         $contextlist = new contextlist();
         $contextlist->add_from_sql($sql, ['userid' => $userid]);
+        $contextlist->add_from_sql(
+            "SELECT DISTINCT c.id
+               FROM {context} c
+               JOIN {local_video_bridge_session} s ON s.contextid = c.id
+              WHERE s.userid = :sessionuserid",
+            ['sessionuserid' => $userid]
+        );
         return $contextlist;
     }
 
@@ -119,6 +140,34 @@ class provider implements
                 [get_string('privacy:progress', 'local_video_bridge')],
                 (object)['progress' => $export]
             );
+
+            $sessions = $DB->get_records(
+                'local_video_bridge_session',
+                ['contextid' => $context->id, 'userid' => $userid],
+                'id ASC'
+            );
+            if ($sessions) {
+                $sessionexport = [];
+                foreach ($sessions as $session) {
+                    $sessionexport[] = (object)[
+                        'component' => $session->component,
+                        'itemid' => $session->itemid,
+                        'sessionid' => $session->sessionid,
+                        'startedat' => transform::datetime($session->startedat),
+                        'endedat' => $session->endedat ? transform::datetime($session->endedat) : null,
+                        'duration' => $session->duration,
+                        'watchtime' => $session->watchtime,
+                        'plays' => $session->plays,
+                        'pauses' => $session->pauses,
+                        'seeks' => $session->seeks,
+                        'ranges' => json_decode($session->ranges, true) ?: [],
+                    ];
+                }
+                writer::with_context($context)->export_data(
+                    [get_string('privacy:sessions', 'local_video_bridge')],
+                    (object)['sessions' => $sessionexport]
+                );
+            }
         }
     }
 
@@ -131,6 +180,7 @@ class provider implements
     public static function delete_data_for_all_users_in_context(context $context): void {
         global $DB;
         $DB->delete_records('local_video_bridge_progress', ['contextid' => $context->id]);
+        $DB->delete_records('local_video_bridge_session', ['contextid' => $context->id]);
     }
 
     /**
@@ -145,6 +195,10 @@ class provider implements
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
             $DB->delete_records('local_video_bridge_progress', [
+                'contextid' => $context->id,
+                'userid' => $userid,
+            ]);
+            $DB->delete_records('local_video_bridge_session', [
                 'contextid' => $context->id,
                 'userid' => $userid,
             ]);
