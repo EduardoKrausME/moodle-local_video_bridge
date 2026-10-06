@@ -311,7 +311,16 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
             new xmldb_field('percentend', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'percentstart'),
             new xmldb_field('ratechanges', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'speedavg'),
             new xmldb_field('receivedended', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'ratechanges'),
-            new xmldb_field('endreason', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, '', 'receivedended'),
+            new xmldb_field(
+                'endreason',
+                XMLDB_TYPE_CHAR,
+                '32',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                'active_or_unclosed',
+                'receivedended'
+            ),
         ];
         if ($dbman->table_exists($table)) {
             foreach ($fields as $field) {
