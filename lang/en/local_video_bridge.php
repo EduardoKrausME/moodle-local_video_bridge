@@ -24,17 +24,22 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+$string['aibridgemissing'] = 'local_ai_bridge is required to run AI caption tools.';
 $string['browservideonotsupported'] = 'Your browser does not support HTML5 video playback.';
 $string['captionpluginmissing'] = 'The caption source "{$a}" is not installed or is unavailable.';
 $string['captionsources'] = 'Caption sources';
 $string['captionsources_desc'] = 'Shared caption source adapters used by Moodle video plugins.';
+$string['captiontoolinputtoolarge'] = 'The caption tool input is too large.';
 $string['captiontoolmissing'] = 'The caption tool "{$a}" is not installed or is unavailable.';
 $string['captiontools'] = 'Caption tools';
 $string['captiontools_desc'] = 'Shared caption-processing tools used by Moodle video plugins.';
+$string['emptycaptiontoolinput'] = 'Caption tool input cannot be empty.';
 $string['invalidcaptionplugin'] = 'The caption source "{$a}" is invalid and was ignored.';
 $string['invalidcaptiontool'] = 'The caption tool "{$a}" is invalid and was ignored.';
+$string['invalidmindmap'] = 'The AI response is not a valid Mermaid mindmap.';
 $string['invalidsourceplugin'] = 'The video source "{$a}" is invalid and was ignored.';
 $string['invalidsubplugintype'] = 'Invalid Video Bridge subplugin type.';
+$string['invalidtoolwebvtt'] = 'The AI response is not valid WebVTT.';
 $string['nosubplugins'] = 'No subplugins installed';
 $string['nosubpluginshelp'] = 'Install at least one compatible Video Bridge subplugin to make it available to video plugins.';
 $string['pluginadministration'] = 'Video Bridge administration';
@@ -59,6 +64,8 @@ $string['privacy:metadata:progress:timecreated'] = 'When the progress record was
 $string['privacy:metadata:progress:timemodified'] = 'When the progress record was last updated.';
 $string['privacy:metadata:progress:userid'] = 'The user whose playback progress is stored.';
 $string['privacy:progress'] = 'Video playback progress';
+$string['progressmap'] = 'Your viewing map';
+$string['progresssaveerror'] = 'Video progress could not be saved.';
 $string['sourcepluginmissing'] = 'The video source "{$a}" is not installed or is unavailable.';
 $string['sources'] = 'Video sources';
 $string['sources_desc'] = 'Shared video source adapters used by Moodle video plugins.';
@@ -70,12 +77,3 @@ $string['subplugintype_videocaptiontool_plural'] = 'Caption tools';
 $string['subplugintype_videoprogresssource'] = 'Video source';
 $string['subplugintype_videoprogresssource_plural'] = 'Video sources';
 $string['unknown'] = 'Not provided';
-
-$string['aibridgemissing'] = 'local_ai_bridge is required to run AI caption tools.';
-$string['captiontoolinputtoolarge'] = 'The caption tool input is too large.';
-$string['emptycaptiontoolinput'] = 'Caption tool input cannot be empty.';
-$string['invalidmindmap'] = 'The AI response is not a valid Mermaid mindmap.';
-$string['invalidtoolwebvtt'] = 'The AI response is not valid WebVTT.';
-
-$string['progressmap'] = 'Your viewing map';
-$string['progresssaveerror'] = 'Video progress could not be saved.';
