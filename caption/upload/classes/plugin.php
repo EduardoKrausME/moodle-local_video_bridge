@@ -150,7 +150,7 @@ class plugin extends plugin_base {
                 'subdirs' => 0,
                 'maxfiles' => 20,
                 'maxbytes' => self::MAX_BYTES,
-                'accepted_types' => ['.vtt'],
+                'accepted_types' => ['.vtt', '.srt'],
             ]
         );
         $defaultvalues['captionfiles'] = $draftitemid;
@@ -295,7 +295,7 @@ class plugin extends plugin_base {
                 'subdirs' => 0,
                 'maxfiles' => 20,
                 'maxbytes' => self::MAX_BYTES,
-                'accepted_types' => ['.vtt'],
+                'accepted_types' => ['.vtt', '.srt'],
             ]
         );
         $defaultvalues['captionfiles'] = $draftitemid;
