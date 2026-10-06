@@ -72,15 +72,18 @@ define(['core/templates'], function(Templates) {
             this.mapElement = null;
             this.percentElement = null;
             this.telemetry = this.createTelemetry();
+            this.recordEvent('sessionstart', {position: this.currentTime});
             this.lastTickAt = Date.now();
             this.rateWeight = 0;
             this.rateSeconds = 0;
+            this.lastPlaybackRate = Number(this.adapter.getPlaybackRate ? this.adapter.getPlaybackRate() : 1) || 1;
             this.playing = false;
             this.continuousStartedAt = 0;
             this.continuousStartPosition = this.currentTime;
             this.idleStartedAt = 0;
             this.pageHideHandler = () => {
                 this.stopContinuous(this.currentTime);
+                this.recordEvent('sessionend', {position: this.currentTime});
                 this.telemetry.endedat = Math.floor(Date.now() / 1000);
                 this.dirty = true;
                 this.flush(true);
@@ -117,7 +120,23 @@ define(['core/templates'], function(Templates) {
                 rates: {},
                 continuousblocks: [],
                 inactivitygaps: [],
+                events: [],
             };
+        }
+
+        recordEvent(type, data = {}) {
+            if (this.telemetry.level !== 'detailed' || this.telemetry.events.length >= 500) {
+                return;
+            }
+            const position = Number(
+                data.position !== undefined
+                    ? data.position
+                    : (this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime)
+            ) || 0;
+            this.telemetry.events.push(Object.assign({
+                type: type,
+                position: Math.max(0, position),
+            }, data));
         }
 
         addRange(start, end) {
@@ -189,6 +208,13 @@ define(['core/templates'], function(Templates) {
             } else if (Math.abs(delta) > 1) {
                 this.stopContinuous(previous);
                 this.telemetry.seeks++;
+                this.recordEvent('seek', {
+                    position: position,
+                    from: previous,
+                    to: position,
+                    distance: Math.abs(delta),
+                    direction: delta > 0 ? 'forward' : 'backward',
+                });
                 if (delta > 0) {
                     this.telemetry.skips++;
                     if (this.telemetry.level === 'detailed' && this.telemetry.skippoints.length < 1000) {
@@ -216,6 +242,7 @@ define(['core/templates'], function(Templates) {
             if (typeof this.adapter.onPlay === 'function') {
                 this.adapter.onPlay(() => {
                     this.telemetry.plays++;
+                    this.recordEvent('play', {position: this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime});
                     this.recordInactivity();
                     this.playing = true;
                     this.startContinuous(this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime);
@@ -229,6 +256,7 @@ define(['core/templates'], function(Templates) {
                     this.playing = false;
                     this.idleStartedAt = Date.now();
                     this.telemetry.pauses++;
+                    this.recordEvent('pause', {position: this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime});
                     if (this.telemetry.level === 'detailed' && this.telemetry.pausepoints.length < 1000) {
                         this.telemetry.pausepoints.push(Number(this.adapter.getCurrentTime() || this.currentTime || 0));
                     }
@@ -237,7 +265,26 @@ define(['core/templates'], function(Templates) {
             }
             if (typeof this.adapter.onRateChange === 'function') {
                 this.adapter.onRateChange(() => {
+                    const nextRate = Number(this.adapter.getPlaybackRate ? this.adapter.getPlaybackRate() : 1) || 1;
+                    this.recordEvent('playbackrate', {
+                        position: this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime,
+                        from: this.lastPlaybackRate,
+                        to: nextRate,
+                    });
+                    this.lastPlaybackRate = nextRate;
                     this.lastTickAt = Date.now();
+                    this.dirty = true;
+                });
+            }
+            if (typeof this.adapter.onWaiting === 'function') {
+                this.adapter.onWaiting(() => {
+                    this.recordEvent('waiting');
+                    this.dirty = true;
+                });
+            }
+            if (typeof this.adapter.onPlaying === 'function') {
+                this.adapter.onPlaying(() => {
+                    this.recordEvent('playing');
                     this.dirty = true;
                 });
             }
@@ -262,6 +309,7 @@ define(['core/templates'], function(Templates) {
                     this.currentTime = duration;
                     this.markPosition(duration);
                 }
+                this.recordEvent('ended', {position: this.currentTime});
                 this.telemetry.endedat = Math.floor(Date.now() / 1000);
                 this.telemetry.dropoff = Math.floor(this.currentTime || 0);
                 this.dirty = true;
@@ -269,6 +317,10 @@ define(['core/templates'], function(Templates) {
             });
 
             document.addEventListener('visibilitychange', () => {
+                this.recordEvent('visibilitychange', {
+                    position: this.currentTime,
+                    state: document.hidden ? 'hidden' : 'visible',
+                });
                 if (document.hidden) {
                     this.stopContinuous(this.currentTime);
                     if (!this.idleStartedAt) {
