@@ -75,7 +75,12 @@ define(['core/templates'], function(Templates) {
             this.lastTickAt = Date.now();
             this.rateWeight = 0;
             this.rateSeconds = 0;
+            this.playing = false;
+            this.continuousStartedAt = 0;
+            this.continuousStartPosition = this.currentTime;
+            this.idleStartedAt = 0;
             this.pageHideHandler = () => {
+                this.stopContinuous(this.currentTime);
                 this.telemetry.endedat = Math.floor(Date.now() / 1000);
                 this.flush(true);
             };
@@ -109,6 +114,8 @@ define(['core/templates'], function(Templates) {
                 skippoints: [],
                 replaypoints: [],
                 rates: {},
+                continuousblocks: [],
+                inactivitygaps: [],
             };
         }
 
@@ -125,6 +132,41 @@ define(['core/templates'], function(Templates) {
             } else if (ranges.length < 500) {
                 ranges.push([cleanStart, cleanEnd]);
             }
+        }
+
+        startContinuous(position) {
+            if (this.telemetry.level !== 'detailed' || this.continuousStartedAt) {
+                return;
+            }
+            this.continuousStartedAt = Date.now();
+            this.continuousStartPosition = Math.max(0, Number(position) || 0);
+        }
+
+        stopContinuous(position) {
+            if (this.telemetry.level !== 'detailed' || !this.continuousStartedAt) {
+                return;
+            }
+            const seconds = Math.max(0, Math.min(604800, (Date.now() - this.continuousStartedAt) / 1000));
+            if (seconds >= 0.25 && this.telemetry.continuousblocks.length < 500) {
+                this.telemetry.continuousblocks.push([
+                    this.continuousStartPosition,
+                    Math.max(0, Number(position) || 0),
+                    seconds,
+                ]);
+            }
+            this.continuousStartedAt = 0;
+        }
+
+        recordInactivity() {
+            if (this.telemetry.level !== 'detailed' || !this.idleStartedAt) {
+                this.idleStartedAt = 0;
+                return;
+            }
+            const seconds = Math.max(0, Math.min(604800, (Date.now() - this.idleStartedAt) / 1000));
+            if (seconds >= 0.25 && this.telemetry.inactivitygaps.length < 500) {
+                this.telemetry.inactivitygaps.push(seconds);
+            }
+            this.idleStartedAt = 0;
         }
 
         observeTelemetry(position) {
@@ -144,6 +186,7 @@ define(['core/templates'], function(Templates) {
                     this.addRange(previous, position);
                 }
             } else if (Math.abs(delta) > 1) {
+                this.stopContinuous(previous);
                 this.telemetry.seeks++;
                 if (delta > 0) {
                     this.telemetry.skips++;
@@ -155,6 +198,9 @@ define(['core/templates'], function(Templates) {
                     if (this.telemetry.level === 'detailed' && this.telemetry.replaypoints.length < 1000) {
                         this.telemetry.replaypoints.push([position, previous]);
                     }
+                }
+                if (this.playing) {
+                    this.startContinuous(position);
                 }
             }
 
@@ -169,12 +215,18 @@ define(['core/templates'], function(Templates) {
             if (typeof this.adapter.onPlay === 'function') {
                 this.adapter.onPlay(() => {
                     this.telemetry.plays++;
+                    this.recordInactivity();
+                    this.playing = true;
+                    this.startContinuous(this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime);
                     this.lastTickAt = Date.now();
                     this.dirty = true;
                 });
             }
             if (typeof this.adapter.onPause === 'function') {
                 this.adapter.onPause(() => {
+                    this.stopContinuous(this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime);
+                    this.playing = false;
+                    this.idleStartedAt = Date.now();
                     this.telemetry.pauses++;
                     if (this.telemetry.level === 'detailed' && this.telemetry.pausepoints.length < 1000) {
                         this.telemetry.pausepoints.push(Number(this.adapter.getCurrentTime() || this.currentTime || 0));
@@ -201,6 +253,8 @@ define(['core/templates'], function(Templates) {
             });
 
             this.adapter.onEnded(() => {
+                this.stopContinuous(this.currentTime);
+                this.playing = false;
                 const duration = Number(this.adapter.getDuration() || this.duration || 0);
                 if (duration > 0) {
                     this.duration = duration;
@@ -211,6 +265,20 @@ define(['core/templates'], function(Templates) {
                 this.telemetry.dropoff = Math.floor(this.currentTime || 0);
                 this.dirty = true;
                 this.flush(true);
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    this.stopContinuous(this.currentTime);
+                    if (!this.idleStartedAt) {
+                        this.idleStartedAt = Date.now();
+                    }
+                } else {
+                    this.recordInactivity();
+                    if (this.playing) {
+                        this.startContinuous(this.currentTime);
+                    }
+                }
             });
 
             const interval = Math.max(MIN_SAVE_INTERVAL, Number(this.config.saveinterval || MIN_SAVE_INTERVAL));
