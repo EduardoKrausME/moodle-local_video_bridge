@@ -114,13 +114,44 @@ class analytics {
             : [];
         $rates = self::normalise_rates($payload['rates'] ?? []);
 
+        // Detailed telemetry is client-observed evidence, not an authoritative
+        // completion decision. Anchor time to server persistence and bound the
+        // amount of accepted playback evidence by elapsed server time.
+        $serverelapsed = $record
+            ? max(1, min(86400, $now - (int)$record->timecreated + 90))
+            : 90;
+        $watchtime = min(
+            self::bound_int($payload['watchtime'] ?? 0, 0, 604800),
+            $serverelapsed
+        );
+
+        $maximumrate = max(1.0, min(4.0, (float)($payload['speedavg'] ?? 1.0)));
+        foreach (array_keys($rates) as $rate) {
+            $maximumrate = max($maximumrate, min(4.0, (float)$rate));
+        }
+        $ranges = self::limit_range_seconds(
+            $ranges,
+            max(5.0, $watchtime * $maximumrate + 5.0)
+        );
+        $continuousblocks = self::limit_block_seconds(
+            $continuousblocks,
+            max(5.0, $watchtime + 5.0)
+        );
+
+        $serverstarted = $record
+            ? max((int)$record->timecreated, min($now, (int)$record->startedat))
+            : $now;
+        $serverended = (!empty($payload['endedat']) || ($record && !empty($record->endedat)))
+            ? $now
+            : 0;
+
         $values = [
             'source' => clean_param($source, PARAM_PLUGIN),
             'level' => $level,
-            'startedat' => max(0, (int)($payload['startedat'] ?? $now)),
-            'endedat' => max(0, (int)($payload['endedat'] ?? 0)),
+            'startedat' => $serverstarted,
+            'endedat' => $serverended,
             'duration' => self::bound_int($payload['duration'] ?? 0, 0, 604800),
-            'watchtime' => self::bound_int($payload['watchtime'] ?? 0, 0, 604800),
+            'watchtime' => $watchtime,
             'plays' => self::bound_int($payload['plays'] ?? 0, 0, 100000),
             'pauses' => self::bound_int($payload['pauses'] ?? 0, 0, 100000),
             'seeks' => self::bound_int($payload['seeks'] ?? 0, 0, 100000),
@@ -476,6 +507,58 @@ class analytics {
             }
         }
         return $clean;
+    }
+
+    /**
+     * Limits accepted unique watched ranges to a server-plausible amount of media time.
+     *
+     * @param array $ranges Normalized ranges.
+     * @param float $maximumseconds Maximum accepted unique media seconds.
+     * @return array
+     */
+    private static function limit_range_seconds(array $ranges, float $maximumseconds): array {
+        $remaining = max(0.0, $maximumseconds);
+        $limited = [];
+        foreach ($ranges as $range) {
+            if ($remaining <= 0 || !is_array($range) || count($range) < 2) {
+                break;
+            }
+            $length = max(0.0, (float)$range[1] - (float)$range[0]);
+            if ($length <= 0) {
+                continue;
+            }
+            $accepted = min($length, $remaining);
+            $limited[] = [
+                round((float)$range[0], 2),
+                round((float)$range[0] + $accepted, 2),
+            ];
+            $remaining -= $accepted;
+        }
+        return $limited;
+    }
+
+    /**
+     * Bounds reported continuous playback blocks by accepted real playback time.
+     *
+     * @param array $blocks Normalized blocks.
+     * @param float $maximumseconds Maximum accepted real seconds.
+     * @return array
+     */
+    private static function limit_block_seconds(array $blocks, float $maximumseconds): array {
+        $remaining = max(0.0, $maximumseconds);
+        $limited = [];
+        foreach ($blocks as $block) {
+            if ($remaining <= 0 || !is_array($block) || count($block) < 3) {
+                break;
+            }
+            $seconds = min(max(0.0, (float)$block[2]), $remaining);
+            if ($seconds < 0.25) {
+                continue;
+            }
+            $limited[] = [(float)$block[0], (float)$block[1], round($seconds, 2)];
+            $remaining -= $seconds;
+        }
+        return $limited;
     }
 
     private static function bound_int($value, int $min, int $max): int {
