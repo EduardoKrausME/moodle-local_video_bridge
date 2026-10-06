@@ -43,7 +43,7 @@ class format {
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
         $content = str_replace(["\r\n", "\r"], "\n", trim($content));
 
-        if (!str_starts_with($content, 'WEBVTT')) {
+        if (!preg_match('/^WEBVTT\\b/i', $content)) {
             $content = "WEBVTT\n\n" . $content;
         }
         if (!str_ends_with($content, "\n")) {
@@ -81,17 +81,39 @@ class format {
         self::assert_webvtt($content);
         $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
         $text = [];
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '' || str_starts_with($line, 'WEBVTT') || str_contains($line, '-->') ||
-                    preg_match('/^\d+$/', $line) || str_starts_with($line, 'NOTE')) {
+        $skipblock = false;
+        $count = count($lines);
+
+        for ($index = 0; $index < $count; $index++) {
+            $line = trim($lines[$index]);
+
+            if ($skipblock) {
+                if ($line === '') {
+                    $skipblock = false;
+                }
                 continue;
             }
+
+            if (preg_match('/^(NOTE|STYLE|REGION)\\b/i', $line)) {
+                $skipblock = true;
+                continue;
+            }
+
+            if ($line === '' || preg_match('/^WEBVTT\\b/i', $line) || str_contains($line, '-->')) {
+                continue;
+            }
+
+            $next = $index + 1 < $count ? trim($lines[$index + 1]) : '';
+            if ($next !== '' && str_contains($next, '-->')) {
+                continue;
+            }
+
             $line = trim(strip_tags($line));
             if ($line !== '') {
                 $text[] = $line;
             }
         }
+
         return implode("\n", $text);
     }
 
