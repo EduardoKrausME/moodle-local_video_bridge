@@ -45,6 +45,14 @@ final class progress_manager_test extends advanced_testcase {
         $this->assertSame(100, manager::bucket_for_position(824, 824));
     }
 
+    public function test_progress_batch_empty_input_returns_empty_array(): void {
+        $this->resetAfterTest();
+        $hash = str_repeat('a', 64);
+
+        $this->assertSame([], manager::get_progress_batch(1, 'mod_example', 1, $hash, []));
+        $this->assertSame([], manager::get_latest_session_times(1, 'mod_example', 1, $hash, []));
+    }
+
     public function test_invalid_duration_has_no_bucket(): void {
         $this->assertSame(0, manager::progress_length(0));
         $this->assertSame(0, manager::bucket_for_position(10, 0));
