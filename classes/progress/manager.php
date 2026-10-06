@@ -302,6 +302,99 @@ class manager {
     }
 
     /**
+     * Returns module context ids in which one consumer stores data for a user.
+     *
+     * @param string $component Consumer component.
+     * @param int $userid User id.
+     * @return int[]
+     */
+    public static function get_consumer_contextids(string $component, int $userid): array {
+        global $DB;
+
+        $component = clean_param($component, PARAM_COMPONENT);
+        $sql = "SELECT contextid FROM {local_video_bridge_progress}
+                 WHERE component = :pcomponent AND userid = :puserid
+                UNION
+                SELECT contextid FROM {local_video_bridge_session}
+                 WHERE component = :scomponent AND userid = :suserid";
+        return array_map('intval', array_keys($DB->get_records_sql_menu(
+            "SELECT contextid, contextid AS value FROM ({$sql}) bridgecontexts",
+            [
+                'pcomponent' => $component,
+                'puserid' => $userid,
+                'scomponent' => $component,
+                'suserid' => $userid,
+            ]
+        )));
+    }
+
+    /**
+     * Returns user ids with data for one consumer context.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int|null $itemid Optional consumer instance id.
+     * @return int[]
+     */
+    public static function get_consumer_userids(
+        int $contextid,
+        string $component,
+        ?int $itemid = null
+    ): array {
+        global $DB;
+
+        $component = clean_param($component, PARAM_COMPONENT);
+        $itemsql = $itemid === null ? '' : ' AND itemid = :itemid';
+        $params = [
+            'pcontextid' => $contextid,
+            'pcomponent' => $component,
+            'scontextid' => $contextid,
+            'scomponent' => $component,
+        ];
+        if ($itemid !== null) {
+            $params['itemid'] = $itemid;
+        }
+
+        $sql = "SELECT userid FROM {local_video_bridge_progress}
+                 WHERE contextid = :pcontextid AND component = :pcomponent{$itemsql}
+                UNION
+                SELECT userid FROM {local_video_bridge_session}
+                 WHERE contextid = :scontextid AND component = :scomponent{$itemsql}";
+        $records = $DB->get_records_sql($sql, $params);
+        return array_values(array_unique(array_map(
+            static fn($record): int => (int)$record->userid,
+            $records
+        )));
+    }
+
+    /**
+     * Deletes bridge-owned progress and session telemetry for one consumer user.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer instance id.
+     * @param int $userid User id.
+     * @return void
+     */
+    public static function delete_consumer_user(
+        int $contextid,
+        string $component,
+        int $itemid,
+        int $userid
+    ): void {
+        global $DB;
+
+        $params = [
+            'contextid' => $contextid,
+            'component' => clean_param($component, PARAM_COMPONENT),
+            'itemid' => $itemid,
+            'userid' => $userid,
+        ];
+        $DB->delete_records('local_video_bridge_progress', $params);
+        $DB->delete_records('local_video_bridge_session', $params);
+    }
+
+    /**
      * Deletes bridge-owned progress and session telemetry for one consumer.
      *
      * Consumer plugins should call this instead of deleting Video Bridge tables directly.
