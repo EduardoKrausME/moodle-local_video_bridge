@@ -104,6 +104,61 @@ abstract class plugin_base {
     }
 
     /**
+     * Prepares caption state for one media item.
+     *
+     * @param array $defaultvalues Form values.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function prepare_media_form_data(
+        array &$defaultvalues,
+        context_module $context,
+        int $mediaid
+    ): void {
+        $this->prepare_form_data($defaultvalues, $context);
+    }
+
+    /**
+     * Saves caption files for one media item.
+     *
+     * @param stdClass $data Form data.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function save_media_files(stdClass $data, context_module $context, int $mediaid): void {
+        $this->save_files($data, $context);
+    }
+
+    /**
+     * Deletes caption files for one media item.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function delete_media_files(context_module $context, int $mediaid): void {
+        $this->delete_files($context);
+    }
+
+    /**
+     * Returns normalized tracks for one media item.
+     *
+     * @param stdClass $activity Provider-compatible media record.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return array
+     */
+    public function get_tracks_for_media(
+        stdClass $activity,
+        context_module $context,
+        int $mediaid
+    ): array {
+        return $this->get_tracks($activity, $context);
+    }
+
+    /**
      * Returns normalized browser-ready caption tracks.
      *
      * @param stdClass $activity Activity record.
