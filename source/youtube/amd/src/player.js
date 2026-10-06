@@ -263,6 +263,7 @@ define(["jquery", "local_video_bridge/progress"], function ($, Progress) {
         }
     }
 
-    const create = (root, config) => (new YoutubeAdapter(root, config)).initialise()\n        .then((adapter) => Progress.attach(adapter, root, config));
+    const create = (root, config) => (new YoutubeAdapter(root, config)).initialise()
+        .then((adapter) => Progress.attach(adapter, root, config));
     return {create: create};
 });
