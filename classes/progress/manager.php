@@ -474,10 +474,8 @@ class manager {
             }
         }
 
-        $currentbucket = self::bucket_for_position($currenttime, $duration);
-        if ($currentbucket > 0 && empty($watched[$currentbucket]) && !in_array($currentbucket, $incoming, true)) {
-            $incoming[] = $currentbucket;
-        }
+        // The current position alone is not evidence that a bucket was watched.
+        // Only explicit buckets observed by the playback tracker may extend the map.
 
         // Browser data is useful, but it is not authoritative. Bound the number
         // of newly accepted buckets by elapsed server time, with room for high
