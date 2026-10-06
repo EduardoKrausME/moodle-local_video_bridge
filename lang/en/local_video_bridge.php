@@ -114,3 +114,13 @@ $string['unknown'] = 'Not provided';
 $string['eventanalyticsupdated'] = 'Video analytics updated';
 
 $string['privacy:metadata:session:events'] = 'Compact ordered playback events recorded for the session.';
+
+$string['privacy:metadata:session:sessionduration'] = 'Real duration of the playback session.';
+$string['privacy:metadata:session:pausedtime'] = 'Observed paused time during the session.';
+$string['privacy:metadata:session:startposition'] = 'Video position where the session started.';
+$string['privacy:metadata:session:endposition'] = 'Last video position observed in the session.';
+$string['privacy:metadata:session:percentstart'] = 'Authoritative watched percentage at session start.';
+$string['privacy:metadata:session:percentend'] = 'Authoritative watched percentage at session end.';
+$string['privacy:metadata:session:ratechanges'] = 'Number of playback-rate changes observed.';
+$string['privacy:metadata:session:receivedended'] = 'Whether the player emitted an ended event.';
+$string['privacy:metadata:session:endreason'] = 'Normalized descriptive reason for the session ending.';
