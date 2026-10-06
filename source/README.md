@@ -6,6 +6,8 @@ For backwards compatibility the technical type remains `videoprogresssource` and
 
 A provider owns source-specific form fields, validation, normalized configuration, source files when needed, its Mustache player template and its AMD adapter. Completion, grades, anti-skip, tracking policy, annotations, branching, questions and analytics belong to the consumer activity.
 
+Bundled providers currently cover protected Moodle uploads, direct HTML5/HLS URLs, YouTube, Vimeo, public Nextcloud shares, Google Drive preview, Panda Video, Bunny Stream, Qencode playback URLs, OTTFlix and generic/cooperative iframe embeds.
+
 Providers declare guaranteed player capabilities through `get_capabilities()`:
 
 - `tracking`: current time/duration updates can be trusted;

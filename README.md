@@ -11,6 +11,8 @@ Bundled sources:
 - public Nextcloud shares;
 - Google Drive preview;
 - Panda Video;
+- Bunny Stream;
+- Qencode playback URLs;
 - OTTFlix;
 - generic/cooperative iframe embed.
 

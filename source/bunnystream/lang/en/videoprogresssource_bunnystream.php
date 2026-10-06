@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Language strings for Bunny Stream.
  *
- * @package   local_video_bridge
+ * @package   videoprogresssource_bunnystream
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100510;
-$plugin->release = '1.1.5';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$string['bunnyurl'] = 'Bunny Stream embed URL';
+$string['bunnyurl_help'] = 'Paste the Bunny Stream iframe URL, such as https://iframe.mediadelivery.net/embed/LIBRARY_ID/VIDEO_ID. You can also enter LIBRARY_ID/VIDEO_ID. Existing query parameters are preserved.';
+$string['invalidurl'] = 'Enter a valid Bunny Stream embed URL or library/video identifier.';
+$string['pluginname'] = 'Bunny Stream';
+$string['privacy:metadata'] = 'The Bunny Stream source stores no personal data independently of the consumer activity.';
