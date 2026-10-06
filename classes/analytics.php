@@ -35,6 +35,13 @@ class analytics {
         return [self::LEVEL_OFF, self::LEVEL_BASIC, self::LEVEL_DETAILED];
     }
 
+    /**
+     * Returns the stable non-reversible identifier used by progress and analytics.
+     */
+    public static function media_hash(string $source, string $sourceconfig = ''): string {
+        return hash('sha256', clean_param($source, PARAM_PLUGIN) . '|' . $sourceconfig);
+    }
+
     public static function normalise_level(string $level): string {
         $level = strtolower(trim($level));
         if (!in_array($level, self::levels(), true)) {
