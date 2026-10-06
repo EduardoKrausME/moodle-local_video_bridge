@@ -30,6 +30,7 @@ use core_collator;
 use core_component;
 use moodle_exception;
 use moodle_url;
+use local_video_bridge\progress\manager as progress_manager;
 use MoodleQuickForm;
 use stdClass;
 use stored_file;
@@ -328,12 +329,22 @@ class manager {
                 (new moodle_url('/local/video_bridge/vendor/vimeo/player.min.js'))->out(false);
         }
 
-        return $config + [
+        $playerconfig = $config + [
             'source' => $source,
             'capabilities' => $plugin->get_capabilities(),
             'adaptermodule' => $plugin->get_amd_module(),
             'sourcetemplate' => $plugin->get_player_template(),
         ];
+
+        if ($plugin->supports('tracking')) {
+            $playerconfig['progress'] = progress_manager::build_config(
+                $context,
+                $source,
+                (string)($record->sourceconfig ?? '')
+            );
+        }
+
+        return $playerconfig;
     }
 
     /**
