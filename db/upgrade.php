@@ -333,7 +333,7 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
     }
 
 
-    if ($oldversion < 2026100617) {
+    if ($oldversion < 2026100618) {
         $dbman = $DB->get_manager();
         $table = new xmldb_table('local_video_bridge_threshold');
 
@@ -359,7 +359,7 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
             $dbman->create_table($table);
         }
 
-        upgrade_plugin_savepoint(true, 2026100617, 'local', 'video_bridge');
+        upgrade_plugin_savepoint(true, 2026100618, 'local', 'video_bridge');
     }
 
     return true;
