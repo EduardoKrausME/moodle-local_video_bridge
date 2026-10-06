@@ -89,6 +89,8 @@ Detailed telemetry never stores one row per `timeupdate`. One session row is upd
 
 Analytics consumers should use the public methods `local_video_bridge\analytics::media_hash()`, `get_watched_ranges()`, `get_session_metrics()` and `get_activity_coverage()`. Direct reads from Video Bridge internal tables are intentionally unnecessary.
 
+`get_session_metrics()` exposes a normalized `reachedend` flag based on the explicit player `ended` event. Incremental consumers may page with `modifiedafter`, `modifiedafterid` and `limit`; the bridge keeps session modification cursors monotonic so a final beacon cannot disappear behind a same-second update. Collective coverage treats a normal `ended` event as completion rather than drop-off, while sessions closed elsewhere contribute to abandonment at their last reported position.
+
 
 ## Optional detailed analytics
 
