@@ -26,6 +26,7 @@ namespace local_video_bridge;
 
 use advanced_testcase;
 use context_module;
+use local_video_bridge\analytics\metrics;
 
 /**
  * Tests compact session persistence and server-owned facts.
@@ -83,4 +84,26 @@ final class analytics_session_test extends advanced_testcase {
         $this->assertSame(1, (int)$stored->receivedended);
         $this->assertSame('ended', (string)$stored->endreason);
     }
+
+    /**
+     * Legacy camelCase metrics reads remain compatible.
+     *
+     * @return void
+     */
+    public function test_metrics_legacy_property_aliases(): void {
+        $metrics = metrics::from_facts([
+            'unique_watch_time' => 42,
+            'playback_time' => 60,
+            'real_session_time' => 90,
+            'pause_count' => 3,
+        ]);
+
+        $this->assertSame(42, $metrics->uniqueWatchTime);
+        $this->assertSame(60, $metrics->playbackTime);
+        $this->assertSame(90, $metrics->sessionTime);
+        $this->assertSame(3, $metrics->pauseCount);
+        $this->assertTrue(isset($metrics->uniqueWatchTime));
+        $this->assertSame(42, $metrics->to_array()['uniqueWatchTime']);
+    }
+
 }
