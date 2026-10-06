@@ -96,7 +96,6 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026100600, 'local', 'video_bridge');
     }
 
-
     if ($oldversion < 2026100601) {
         $dbman = $DB->get_manager();
         $table = new xmldb_table('local_video_bridge_session');
@@ -144,7 +143,6 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
 
         upgrade_plugin_savepoint(true, 2026100601, 'local', 'video_bridge');
     }
-
 
     if ($oldversion < 2026100602) {
         $dbman = $DB->get_manager();
@@ -194,7 +192,6 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
 
         upgrade_plugin_savepoint(true, 2026100602, 'local', 'video_bridge');
     }
-
 
     if ($oldversion < 2026100606) {
         $dbman = $DB->get_manager();
@@ -331,7 +328,6 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         }
         upgrade_plugin_savepoint(true, 2026100615, 'local', 'video_bridge');
     }
-
 
     if ($oldversion < 2026100618) {
         $dbman = $DB->get_manager();
