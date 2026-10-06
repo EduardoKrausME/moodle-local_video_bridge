@@ -124,8 +124,27 @@ define(['core/templates'], function(Templates) {
             };
         }
 
+        telemetryEnabled(key) {
+            const options = this.config.telemetryoptions || {};
+            if (!(key in options)) {
+                return true;
+            }
+            return options[key] !== false && Number(options[key]) !== 0;
+        }
+
         recordEvent(type, data = {}) {
-            if (this.telemetry.level !== 'detailed' || this.telemetry.events.length >= 500) {
+            const optionByType = {
+                pause: 'recordpauses',
+                seek: 'recordseeks',
+                playbackrate: 'recordrates',
+                waiting: 'recordbuffering',
+                playing: 'recordbuffering',
+                sessionend: 'recorddropoff',
+            };
+            const option = optionByType[type];
+            if ((option && !this.telemetryEnabled(option))
+                    || this.telemetry.level !== 'detailed'
+                    || this.telemetry.events.length >= 500) {
                 return;
             }
             const position = Number(
@@ -199,15 +218,21 @@ define(['core/templates'], function(Templates) {
             if (delta >= 0 && delta <= Math.max(5, wallSeconds * Math.max(1, rate) * 3)) {
                 if (delta > 0) {
                     this.telemetry.watchtime += wallSeconds;
-                    this.rateWeight += rate * wallSeconds;
-                    this.rateSeconds += wallSeconds;
-                    this.telemetry.rates[String(rate)] =
-                        (Number(this.telemetry.rates[String(rate)]) || 0) + wallSeconds;
+                    if (this.telemetryEnabled('recordrates')) {
+                        this.rateWeight += rate * wallSeconds;
+                        this.rateSeconds += wallSeconds;
+                    }
+                    if (this.telemetryEnabled('recordrates')) {
+                        this.telemetry.rates[String(rate)] =
+                            (Number(this.telemetry.rates[String(rate)]) || 0) + wallSeconds;
+                    }
                     this.addRange(previous, position);
                 }
             } else if (Math.abs(delta) > 1) {
                 this.stopContinuous(previous);
-                this.telemetry.seeks++;
+                if (this.telemetryEnabled('recordseeks')) {
+                    this.telemetry.seeks++;
+                }
                 this.recordEvent('seek', {
                     position: position,
                     from: previous,
@@ -216,13 +241,21 @@ define(['core/templates'], function(Templates) {
                     direction: delta > 0 ? 'forward' : 'backward',
                 });
                 if (delta > 0) {
-                    this.telemetry.skips++;
-                    if (this.telemetry.level === 'detailed' && this.telemetry.skippoints.length < 1000) {
+                    if (this.telemetryEnabled('recordseeks')) {
+                        this.telemetry.skips++;
+                    }
+                    if (this.telemetryEnabled('recordseeks')
+                            && this.telemetry.level === 'detailed'
+                            && this.telemetry.skippoints.length < 1000) {
                         this.telemetry.skippoints.push([previous, position]);
                     }
                 } else {
-                    this.telemetry.replays++;
-                    if (this.telemetry.level === 'detailed' && this.telemetry.replaypoints.length < 1000) {
+                    if (this.telemetryEnabled('recordseeks')) {
+                        this.telemetry.replays++;
+                    }
+                    if (this.telemetryEnabled('recordseeks')
+                            && this.telemetry.level === 'detailed'
+                            && this.telemetry.replaypoints.length < 1000) {
                         this.telemetry.replaypoints.push([position, previous]);
                     }
                 }
@@ -255,9 +288,13 @@ define(['core/templates'], function(Templates) {
                     this.stopContinuous(this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime);
                     this.playing = false;
                     this.idleStartedAt = Date.now();
-                    this.telemetry.pauses++;
+                    if (this.telemetryEnabled('recordpauses')) {
+                        this.telemetry.pauses++;
+                    }
                     this.recordEvent('pause', {position: this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime});
-                    if (this.telemetry.level === 'detailed' && this.telemetry.pausepoints.length < 1000) {
+                    if (this.telemetryEnabled('recordpauses')
+                            && this.telemetry.level === 'detailed'
+                            && this.telemetry.pausepoints.length < 1000) {
                         this.telemetry.pausepoints.push(Number(this.adapter.getCurrentTime() || this.currentTime || 0));
                     }
                     this.dirty = true;
@@ -442,7 +479,10 @@ define(['core/templates'], function(Templates) {
             data.append('currenttime', String(Math.max(0, Math.floor(this.currentTime || 0))));
             data.append('duration', String(Math.max(0, Math.floor(this.duration || 0))));
             data.append('buckets', JSON.stringify(snapshot));
-            if (this.telemetry && this.telemetry.level !== 'off') {
+            if (this.telemetry
+                    && this.telemetry.level !== 'off'
+                    && this.config.telemetryenabled !== false
+                    && Number(this.config.telemetryenabled ?? 1) !== 0) {
                 const rates = {};
                 Object.entries(this.telemetry.rates || {}).forEach(([rate, seconds]) => {
                     rates[rate] = Math.floor(Number(seconds) || 0);
