@@ -317,15 +317,12 @@ class manager {
                 UNION
                 SELECT contextid FROM {local_video_bridge_session}
                  WHERE component = :scomponent AND userid = :suserid";
-        return array_map('intval', array_keys($DB->get_records_sql_menu(
-            "SELECT contextid, contextid AS value FROM ({$sql}) bridgecontexts",
-            [
-                'pcomponent' => $component,
-                'puserid' => $userid,
-                'scomponent' => $component,
-                'suserid' => $userid,
-            ]
-        )));
+        return array_map('intval', $DB->get_fieldset_sql($sql, [
+            'pcomponent' => $component,
+            'puserid' => $userid,
+            'scomponent' => $component,
+            'suserid' => $userid,
+        ]));
     }
 
     /**
@@ -344,7 +341,8 @@ class manager {
         global $DB;
 
         $component = clean_param($component, PARAM_COMPONENT);
-        $itemsql = $itemid === null ? '' : ' AND itemid = :itemid';
+        $pitemsql = $itemid === null ? '' : ' AND itemid = :pitemid';
+        $sitemsql = $itemid === null ? '' : ' AND itemid = :sitemid';
         $params = [
             'pcontextid' => $contextid,
             'pcomponent' => $component,
@@ -352,14 +350,15 @@ class manager {
             'scomponent' => $component,
         ];
         if ($itemid !== null) {
-            $params['itemid'] = $itemid;
+            $params['pitemid'] = $itemid;
+            $params['sitemid'] = $itemid;
         }
 
         $sql = "SELECT userid FROM {local_video_bridge_progress}
-                 WHERE contextid = :pcontextid AND component = :pcomponent{$itemsql}
+                 WHERE contextid = :pcontextid AND component = :pcomponent{$pitemsql}
                 UNION
                 SELECT userid FROM {local_video_bridge_session}
-                 WHERE contextid = :scontextid AND component = :scomponent{$itemsql}";
+                 WHERE contextid = :scontextid AND component = :scomponent{$sitemsql}";
         $records = $DB->get_records_sql($sql, $params);
         return array_values(array_unique(array_map(
             static fn($record): int => (int)$record->userid,
