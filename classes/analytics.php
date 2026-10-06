@@ -106,6 +106,12 @@ class analytics {
         $replaypoints = $level === self::LEVEL_DETAILED
             ? self::normalise_ranges($payload['replaypoints'] ?? [], 1000)
             : [];
+        $continuousblocks = $level === self::LEVEL_DETAILED
+            ? self::normalise_blocks($payload['continuousblocks'] ?? [])
+            : [];
+        $inactivitygaps = $level === self::LEVEL_DETAILED
+            ? self::normalise_gaps($payload['inactivitygaps'] ?? [])
+            : [];
         $rates = self::normalise_rates($payload['rates'] ?? []);
 
         $values = [
@@ -128,6 +134,8 @@ class analytics {
             'skippoints' => json_encode($skippoints, JSON_THROW_ON_ERROR),
             'replaypoints' => json_encode($replaypoints, JSON_THROW_ON_ERROR),
             'rates' => json_encode($rates, JSON_THROW_ON_ERROR),
+            'continuousblocks' => json_encode($continuousblocks, JSON_THROW_ON_ERROR),
+            'inactivitygaps' => json_encode($inactivitygaps, JSON_THROW_ON_ERROR),
             'timemodified' => $now,
         ];
 
@@ -392,6 +400,51 @@ class analytics {
         foreach (array_slice($rates, 0, 50, true) as $rate => $seconds) {
             $key = (string)max(0.1, min(16.0, (float)$rate));
             $clean[$key] = max(0, min(604800, (int)$seconds));
+        }
+        return $clean;
+    }
+
+    /**
+     * Normalises continuous playback blocks as [start position, end position, real seconds].
+     *
+     * @param mixed $blocks Browser observations.
+     * @return array
+     */
+    private static function normalise_blocks($blocks): array {
+        if (!is_array($blocks)) {
+            return [];
+        }
+        $clean = [];
+        foreach (array_slice($blocks, 0, 500) as $block) {
+            if (!is_array($block) || count($block) < 3) {
+                continue;
+            }
+            $start = max(0, min(604800, (float)$block[0]));
+            $end = max(0, min(604800, (float)$block[1]));
+            $seconds = max(0, min(604800, (float)$block[2]));
+            if ($seconds >= 0.25) {
+                $clean[] = [round($start, 2), round($end, 2), round($seconds, 2)];
+            }
+        }
+        return $clean;
+    }
+
+    /**
+     * Normalises real-time inactivity gaps observed by the player.
+     *
+     * @param mixed $gaps Browser observations.
+     * @return array
+     */
+    private static function normalise_gaps($gaps): array {
+        if (!is_array($gaps)) {
+            return [];
+        }
+        $clean = [];
+        foreach (array_slice($gaps, 0, 500) as $gap) {
+            $seconds = max(0, min(604800, (float)$gap));
+            if ($seconds >= 0.25) {
+                $clean[] = round($seconds, 2);
+            }
         }
         return $clean;
     }
