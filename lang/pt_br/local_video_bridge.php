@@ -53,6 +53,21 @@ $string['privacy:metadata:progress:source'] = 'A fonte do Video Bridge usada par
 $string['privacy:metadata:progress:timecreated'] = 'Quando o registro de progresso foi criado.';
 $string['privacy:metadata:progress:timemodified'] = 'Quando o registro de progresso foi atualizado pela última vez.';
 $string['privacy:metadata:progress:userid'] = 'O usuário cujo progresso de reprodução é armazenado.';
+
+$string['privacy:metadata:session'] = 'O Video Bridge armazena telemetria compacta das sessões de reprodução para consumidores de analytics.';
+$string['privacy:metadata:session:component'] = 'O componente Moodle que está usando o vídeo.';
+$string['privacy:metadata:session:contextid'] = 'O contexto do módulo em que o vídeo foi exibido.';
+$string['privacy:metadata:session:endedat'] = 'Quando a sessão de reprodução terminou.';
+$string['privacy:metadata:session:itemid'] = 'O ID da instância da atividade consumidora.';
+$string['privacy:metadata:session:mediahash'] = 'O identificador não reversível da mídia.';
+$string['privacy:metadata:session:ranges'] = 'Os intervalos compactados assistidos quando a telemetria detalhada está habilitada.';
+$string['privacy:metadata:session:sessionid'] = 'Um identificador aleatório da sessão de reprodução.';
+$string['privacy:metadata:session:startedat'] = 'Quando a sessão de reprodução começou.';
+$string['privacy:metadata:session:timemodified'] = 'Quando o snapshot compacto da sessão foi atualizado.';
+$string['privacy:metadata:session:userid'] = 'O usuário cuja sessão de reprodução é armazenada.';
+$string['privacy:metadata:session:watchtime'] = 'O tempo real estimado de reprodução na sessão.';
+$string['privacy:sessions'] = 'Sessões de reprodução do vídeo';
+
 $string['privacy:progress'] = 'Progresso de reprodução do vídeo';
 $string['progressmap'] = 'Seu mapa de visualização';
 $string['progresssaveerror'] = 'Não foi possível salvar o progresso do vídeo.';
