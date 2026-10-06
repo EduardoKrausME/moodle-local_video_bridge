@@ -88,4 +88,47 @@ final class media_consumer_test extends advanced_testcase {
         $this->assertSame(100, (int)$matrix[202][$hash1]->percent);
         $this->assertArrayNotHasKey($hash2, $matrix[202]);
     }
+
+    /**
+     * Per-media cleanup does not remove sibling media progress.
+     *
+     * @return void
+     */
+    public function test_delete_consumer_media(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $contextid = \context_system::instance()->id;
+        $now = time();
+        $hash1 = hash('sha256', 'delete-one');
+        $hash2 = hash('sha256', 'keep-two');
+
+        foreach ([$hash1, $hash2] as $hash) {
+            $DB->insert_record('local_video_bridge_progress', (object)[
+                'contextid' => $contextid,
+                'component' => 'mod_example',
+                'itemid' => 77,
+                'source' => 'youtube',
+                'mediahash' => $hash,
+                'userid' => 101,
+                'currenttime' => 0,
+                'duration' => 100,
+                'percent' => 10,
+                'map' => '[]',
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ]);
+        }
+
+        progress_manager::delete_consumer_media(
+            $contextid,
+            'mod_example',
+            77,
+            $hash1
+        );
+
+        $this->assertFalse($DB->record_exists('local_video_bridge_progress', ['mediahash' => $hash1]));
+        $this->assertTrue($DB->record_exists('local_video_bridge_progress', ['mediahash' => $hash2]));
+    }
+
 }
