@@ -1,6 +1,6 @@
 # Moodle Video Bridge
 
-Video Bridge is the shared source/provider layer for Moodle video activities. The repository deliberately contains source infrastructure only; progress, grading, completion, quizzes, annotations, branching, discussions and other activity rules stay in the consumer plugin.
+Video Bridge is the shared video infrastructure for Moodle video activities. It centralizes source adapters and the learner's normalized playback progress/viewing map, while grading, completion rules, quizzes, annotations, branching, discussions and other pedagogical rules stay in the consumer plugin.
 
 Bundled sources:
 
@@ -54,3 +54,14 @@ AI caption operations are extensible through the `videocaptiontool` subplugin ty
 - `videocaptiontool_mindmap` turns caption content into a Mermaid mind map.
 
 Each tool has its own configurable AI Bridge purpose idnumber, so tenants may route each operation to different providers, models, roles, limits and credit costs.
+
+
+## Shared viewing map and progress
+
+Every source that declares reliable `tracking` automatically receives the Video Bridge progress tracker. Consumer activities do not need their own progress table, AJAX service, percentage calculation or viewing-map JavaScript.
+
+The tracker keeps watched buckets in browser memory, persists them at most once every 60 seconds, and sends one final best-effort payload with `navigator.sendBeacon()` when the page is closed or navigated away from. Seeking never fills skipped ranges: only buckets reached by actual player progress events are marked.
+
+Progress is stored per module context, consumer component, activity instance, media hash and user. Videos longer than 100 seconds use 100 normalized buckets; shorter videos use approximately one bucket per second. The server calculates the authoritative percentage from the merged map and never trusts a percentage supplied by the browser.
+
+`local_video_bridge\progress\manager` exposes the consolidated state for reports or activity logic, including current position, duration, watched percentage and normalized map.
