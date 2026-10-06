@@ -272,6 +272,155 @@ class plugin extends plugin_base {
     }
 
     /**
+     * Prepares one media item's uploaded captions.
+     *
+     * @param array $defaultvalues Form values.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function prepare_media_form_data(
+        array &$defaultvalues,
+        context_module $context,
+        int $mediaid
+    ): void {
+        $draftitemid = file_get_submitted_draft_itemid('captionfiles');
+        file_prepare_draft_area(
+            $draftitemid,
+            $context->id,
+            'local_video_bridge',
+            'caption',
+            $mediaid,
+            [
+                'subdirs' => 0,
+                'maxfiles' => 20,
+                'maxbytes' => self::MAX_BYTES,
+                'accepted_types' => ['.vtt'],
+            ]
+        );
+        $defaultvalues['captionfiles'] = $draftitemid;
+    }
+
+    /**
+     * Saves one media item's uploaded captions.
+     *
+     * @param stdClass $data Form data.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function save_media_files(stdClass $data, context_module $context, int $mediaid): void {
+        global $USER;
+
+        if (empty($data->captionfiles)) {
+            return;
+        }
+
+        $fs = get_file_storage();
+        $draftfiles = $fs->get_area_files(
+            context_user::instance((int)$USER->id)->id,
+            'user',
+            'draft',
+            (int)$data->captionfiles,
+            'filename',
+            false
+        );
+        if (!$draftfiles) {
+            return;
+        }
+
+        $prepared = [];
+        foreach ($draftfiles as $file) {
+            if ($file->get_filesize() > self::MAX_BYTES) {
+                throw new moodle_exception('filetoolarge', 'videocaptionsource_upload');
+            }
+            $extension = strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION));
+            if (!in_array($extension, ['vtt', 'srt'], true)) {
+                throw new moodle_exception('invalidextension', 'videocaptionsource_upload');
+            }
+            $content = $file->get_content();
+            if ($extension === 'srt') {
+                $content = self::convert_srt_to_vtt($content);
+            }
+            self::validate_webvtt($content);
+            $basename = pathinfo($file->get_filename(), PATHINFO_FILENAME);
+            $prepared[clean_filename($basename . '.vtt')] = $content;
+        }
+
+        $fs->delete_area_files($context->id, 'local_video_bridge', 'caption', $mediaid);
+        foreach ($prepared as $filename => $content) {
+            $fs->create_file_from_string([
+                'contextid' => $context->id,
+                'component' => 'local_video_bridge',
+                'filearea' => 'caption',
+                'itemid' => $mediaid,
+                'filepath' => '/',
+                'filename' => $filename,
+            ], $content);
+        }
+    }
+
+    /**
+     * Deletes one media item's uploaded captions.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return void
+     */
+    public function delete_media_files(context_module $context, int $mediaid): void {
+        get_file_storage()->delete_area_files($context->id, 'local_video_bridge', 'caption', $mediaid);
+    }
+
+    /**
+     * Returns uploaded caption tracks for one media item.
+     *
+     * @param stdClass $activity Provider-compatible media record.
+     * @param context_module $context Module context.
+     * @param int $mediaid Media item id.
+     * @return array Browser-ready tracks.
+     */
+    public function get_tracks_for_media(
+        stdClass $activity,
+        context_module $context,
+        int $mediaid
+    ): array {
+        $files = get_file_storage()->get_area_files(
+            $context->id,
+            'local_video_bridge',
+            'caption',
+            $mediaid,
+            'filename',
+            false
+        );
+
+        $tracks = [];
+        $explicitdefault = false;
+        foreach ($files as $file) {
+            $metadata = self::metadata_from_filename($file->get_filename());
+            if ($metadata['isdefault'] && $explicitdefault) {
+                $metadata['isdefault'] = false;
+            } else if ($metadata['isdefault']) {
+                $explicitdefault = true;
+            }
+
+            $metadata['url'] = moodle_url::make_pluginfile_url(
+                $context->id,
+                'local_video_bridge',
+                'caption',
+                $mediaid,
+                $file->get_filepath(),
+                $file->get_filename()
+            )->out(false);
+            $tracks[] = $metadata;
+        }
+
+        if ($tracks && !$explicitdefault) {
+            $tracks[0]['isdefault'] = true;
+        }
+        return $tracks;
+    }
+
+    /**
      * Extracts caption metadata from a filename.
      * @param string $filename filename.
      * @return array Return value.
