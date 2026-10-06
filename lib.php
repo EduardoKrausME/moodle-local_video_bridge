@@ -44,7 +44,7 @@ function local_video_bridge_pluginfile($course, $cm, context $context, string $f
     require_login($course, true, $cm);
 
     $itemid = (int)array_shift($args);
-    if ($itemid !== 0 || !$args) {
+    if ($itemid < 0 || !$args) {
         send_file_not_found();
     }
 
@@ -53,8 +53,8 @@ function local_video_bridge_pluginfile($course, $cm, context $context, string $f
     $file = get_file_storage()->get_file(
         $context->id,
         'local_video_bridge',
-        'video',
-        0,
+        $filearea,
+        $itemid,
         $filepath,
         $filename
     );
