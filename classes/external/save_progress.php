@@ -172,6 +172,7 @@ final class save_progress extends external_api {
                 'percent' => (int)$progress->percent,
             ],
         ])->trigger();
+        progress_manager::trigger_progress_events($context, $progress, $previouspercent);
 
         return [
             'success' => true,
