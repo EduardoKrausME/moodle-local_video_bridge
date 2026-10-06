@@ -21,7 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define([], function() {
+define(['local_video_bridge/progress'], function(Progress) {
     class OttflixAdapter {
         constructor(root, config) {
             this.root = root;
@@ -98,6 +98,6 @@ define([], function() {
             (this.handlers[name] || []).forEach((handler) => handler(...args));
         }
     }
-    const create = (root, config) => Promise.resolve(new OttflixAdapter(root, config));
+    const create = (root, config) => Promise.resolve(Progress.attach(new OttflixAdapter(root, config), root, config));
     return {create: create};
 });
