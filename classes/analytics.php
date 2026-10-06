@@ -1,10 +1,18 @@
 <?php
-// This file is part of Moodle - http://moodle.org/.
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Public analytics API for Video Bridge consumers.
@@ -26,11 +34,20 @@ use stdClass;
  * Consumers should use this class instead of reading Video Bridge tables.
  */
 class analytics {
+    /** Telemetry disabled. */
     public const LEVEL_OFF = 'off';
+
+    /** Compact aggregate telemetry. */
     public const LEVEL_BASIC = 'basic';
+
+    /** Detailed positional telemetry. */
     public const LEVEL_DETAILED = 'detailed';
 
-    /** @return string[] */
+    /**
+     * Returns supported telemetry levels.
+     *
+     * @return string[]
+     */
     public static function levels(): array {
         return [self::LEVEL_OFF, self::LEVEL_BASIC, self::LEVEL_DETAILED];
     }
@@ -42,6 +59,12 @@ class analytics {
         return hash('sha256', clean_param($source, PARAM_PLUGIN) . '|' . $sourceconfig);
     }
 
+    /**
+     * Validates and normalizes one telemetry level.
+     *
+     * @param string $level Requested telemetry level.
+     * @return string Normalized telemetry level.
+     */
     public static function normalise_level(string $level): string {
         $level = strtolower(trim($level));
         if (!in_array($level, self::levels(), true)) {
@@ -430,9 +453,27 @@ class analytics {
                 $buckets[self::position_to_bucket(0, $duration, $bucketcount)]['plays'] += (int)$session->plays;
             }
 
-            self::add_points($buckets, json_decode((string)$session->pausepoints, true) ?: [], 'pauses', $duration, $bucketcount);
-            self::add_range_events($buckets, json_decode((string)$session->skippoints, true) ?: [], 'skips', $duration, $bucketcount);
-            self::add_range_events($buckets, json_decode((string)$session->replaypoints, true) ?: [], 'replays', $duration, $bucketcount);
+            self::add_points(
+                $buckets,
+                json_decode((string)$session->pausepoints, true) ?: [],
+                'pauses',
+                $duration,
+                $bucketcount
+            );
+            self::add_range_events(
+                $buckets,
+                json_decode((string)$session->skippoints, true) ?: [],
+                'skips',
+                $duration,
+                $bucketcount
+            );
+            self::add_range_events(
+                $buckets,
+                json_decode((string)$session->replaypoints, true) ?: [],
+                'replays',
+                $duration,
+                $bucketcount
+            );
 
             // A natural ended event is completion, not abandonment. Count only
             // sessions that were closed without the normalized ended signal.
@@ -482,13 +523,39 @@ class analytics {
         return false;
     }
 
-    private static function add_points(array &$buckets, array $points, string $field, int $duration, int $bucketcount): void {
+    /**
+     * Adds point events to timeline buckets.
+     *
+     * @param array $buckets Timeline buckets.
+     * @param array $points Playback positions.
+     * @param string $field Bucket counter field.
+     * @param int $duration Media duration.
+     * @param int $bucketcount Number of timeline buckets.
+     * @return void
+     */
+    private static function add_points(
+        array &$buckets,
+        array $points,
+        string $field,
+        int $duration,
+        int $bucketcount
+    ): void {
         foreach (array_slice($points, 0, 1000) as $point) {
             $bucket = self::position_to_bucket((float)$point, $duration, $bucketcount);
             $buckets[$bucket][$field]++;
         }
     }
 
+    /**
+     * Adds range events to every intersected timeline bucket.
+     *
+     * @param array $buckets Timeline buckets.
+     * @param array $ranges Position ranges.
+     * @param string $field Bucket counter field.
+     * @param int $duration Media duration.
+     * @param int $bucketcount Number of timeline buckets.
+     * @return void
+     */
     private static function add_range_events(
         array &$buckets,
         array $ranges,
@@ -508,6 +575,14 @@ class analytics {
         }
     }
 
+    /**
+     * Converts a playback position to a timeline bucket index.
+     *
+     * @param float $position Playback position.
+     * @param int $duration Media duration.
+     * @param int $bucketcount Number of buckets.
+     * @return int Bucket index.
+     */
     private static function position_to_bucket(float $position, int $duration, int $bucketcount): int {
         if ($duration <= 0) {
             return 0;
@@ -515,6 +590,13 @@ class analytics {
         return max(0, min($bucketcount - 1, (int)floor(($position / $duration) * $bucketcount)));
     }
 
+    /**
+     * Normalizes and merges watched ranges.
+     *
+     * @param mixed $ranges Browser range data.
+     * @param int $limit Maximum accepted ranges.
+     * @return array
+     */
     private static function normalise_ranges($ranges, int $limit = 500): array {
         if (!is_array($ranges)) {
             return [];
@@ -543,6 +625,13 @@ class analytics {
         return $merged;
     }
 
+    /**
+     * Normalizes ordered event ranges without merging direction.
+     *
+     * @param mixed $ranges Browser event ranges.
+     * @param int $limit Maximum accepted ranges.
+     * @return array
+     */
     private static function normalise_event_ranges($ranges, int $limit = 1000): array {
         if (!is_array($ranges)) {
             return [];
@@ -561,6 +650,12 @@ class analytics {
         return $clean;
     }
 
+    /**
+     * Normalizes playback point observations.
+     *
+     * @param mixed $points Browser point data.
+     * @return array
+     */
     private static function normalise_points($points): array {
         if (!is_array($points)) {
             return [];
@@ -572,11 +667,28 @@ class analytics {
         return $clean;
     }
 
+    /**
+     * Normalizes ordered browser playback events.
+     *
+     * @param mixed $events Browser event data.
+     * @return array
+     */
     private static function normalise_events($events): array {
         if (!is_array($events)) {
             return [];
         }
-        $allowed = ['sessionstart','play','pause','seek','playbackrate','waiting','playing','ended','visibilitychange','sessionend'];
+        $allowed = [
+            'sessionstart',
+            'play',
+            'pause',
+            'seek',
+            'playbackrate',
+            'waiting',
+            'playing',
+            'ended',
+            'visibilitychange',
+            'sessionend',
+        ];
         $clean = [];
         foreach (array_slice($events, 0, 500) as $event) {
             if (!is_array($event)) {
@@ -608,6 +720,12 @@ class analytics {
         return $clean;
     }
 
+    /**
+     * Normalizes playback-rate duration observations.
+     *
+     * @param mixed $rates Browser rate data.
+     * @return array
+     */
     private static function normalise_rates($rates): array {
         if (!is_array($rates)) {
             return [];
@@ -717,6 +835,14 @@ class analytics {
         return $limited;
     }
 
+    /**
+     * Bounds an integer value to the accepted range.
+     *
+     * @param mixed $value Input value.
+     * @param int $min Minimum value.
+     * @param int $max Maximum value.
+     * @return int Bounded integer.
+     */
     private static function bound_int($value, int $min, int $max): int {
         return max($min, min($max, (int)$value));
     }
