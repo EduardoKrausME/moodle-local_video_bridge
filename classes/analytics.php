@@ -151,6 +151,38 @@ class analytics {
             ? $now
             : 0;
 
+        $sessionduration = min(
+            self::bound_int($payload['sessionseconds'] ?? 0, 0, 86400),
+            $serverelapsed
+        );
+        $pausedtime = min(
+            self::bound_int($payload['pausedtime'] ?? 0, 0, 86400),
+            $sessionduration
+        );
+        $startposition = $record
+            ? (int)($record->startposition ?? 0)
+            : self::bound_int($payload['startposition'] ?? 0, 0, 604800);
+        $endposition = self::bound_int(
+            $payload['endposition'] ?? ($payload['dropoff'] ?? 0),
+            0,
+            604800
+        );
+        $percentstart = $record
+            ? (int)($record->percentstart ?? 0)
+            : self::bound_int($payload['_serverpercentstart'] ?? 0, 0, 100);
+        $percentend = self::bound_int($payload['_serverpercentend'] ?? $percentstart, 0, 100);
+        $ratechanges = self::count_event_type($events, 'playbackrate');
+        $receivedended = self::events_have_type($events, 'ended') ? 1 : 0;
+        if ($receivedended) {
+            $endreason = 'ended';
+        } else if (self::events_have_type($events, 'sessionend')) {
+            $endreason = 'page_closed_or_navigated';
+        } else if ($serverended) {
+            $endreason = 'closed_before_end';
+        } else {
+            $endreason = 'active_or_unclosed';
+        }
+
         // Keep the incremental cursor stable even when a normal AJAX save and
         // the final beacon update the same session within the same second.
         $modifiedtime = $record
@@ -163,7 +195,13 @@ class analytics {
             'startedat' => $serverstarted,
             'endedat' => $serverended,
             'duration' => self::bound_int($payload['duration'] ?? 0, 0, 604800),
+            'sessionduration' => $sessionduration,
             'watchtime' => $watchtime,
+            'pausedtime' => $pausedtime,
+            'startposition' => $startposition,
+            'endposition' => $endposition,
+            'percentstart' => $percentstart,
+            'percentend' => $percentend,
             'plays' => self::bound_int($payload['plays'] ?? 0, 0, 100000),
             'pauses' => self::bound_int($payload['pauses'] ?? 0, 0, 100000),
             'seeks' => self::bound_int($payload['seeks'] ?? 0, 0, 100000),
@@ -172,6 +210,9 @@ class analytics {
             'dropoff' => self::bound_int($payload['dropoff'] ?? 0, 0, 604800),
             'maxposition' => self::bound_int($payload['maxposition'] ?? 0, 0, 604800),
             'speedavg' => max(0.1, min(16.0, (float)($payload['speedavg'] ?? 1.0))),
+            'ratechanges' => $ratechanges,
+            'receivedended' => $receivedended,
+            'endreason' => $endreason,
             'ranges' => json_encode($ranges, JSON_THROW_ON_ERROR),
             'pausepoints' => json_encode($pausepoints, JSON_THROW_ON_ERROR),
             'skippoints' => json_encode($skippoints, JSON_THROW_ON_ERROR),
@@ -413,6 +454,23 @@ class analytics {
             'viewers' => count($viewers),
             'buckets' => array_values($buckets),
         ];
+    }
+
+    /**
+     * Counts one normalized event type.
+     *
+     * @param array $events Normalized event list.
+     * @param string $type Event type.
+     * @return int
+     */
+    private static function count_event_type(array $events, string $type): int {
+        $count = 0;
+        foreach ($events as $event) {
+            if (is_array($event) && ($event['type'] ?? '') === $type) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
     /**
