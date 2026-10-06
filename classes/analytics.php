@@ -151,6 +151,12 @@ class analytics {
             ? $now
             : 0;
 
+        // Keep the incremental cursor stable even when a normal AJAX save and
+        // the final beacon update the same session within the same second.
+        $modifiedtime = $record
+            ? max($now, (int)$record->timemodified + 1)
+            : $now;
+
         $values = [
             'source' => clean_param($source, PARAM_PLUGIN),
             'level' => $level,
@@ -174,7 +180,7 @@ class analytics {
             'continuousblocks' => json_encode($continuousblocks, JSON_THROW_ON_ERROR),
             'inactivitygaps' => json_encode($inactivitygaps, JSON_THROW_ON_ERROR),
             'events' => json_encode($events, JSON_THROW_ON_ERROR),
-            'timemodified' => $now,
+            'timemodified' => $modifiedtime,
         ];
 
         if ($record) {
