@@ -30,6 +30,12 @@ use moodle_exception;
  * Normalizes and validates AI-generated caption formats.
  */
 class format {
+    /**
+     * Removes a surrounding Markdown code fence.
+     *
+     * @param string $content Caption content.
+     * @return string Return value.
+     */
     public static function strip_code_fence(string $content): string {
         $content = trim($content);
         if (preg_match('/^\x60\x60\x60[^\n]*\n(.*)\n\x60\x60\x60$/s', $content, $matches)) {
@@ -38,6 +44,12 @@ class format {
         return $content;
     }
 
+    /**
+     * Normalizes content as WebVTT.
+     *
+     * @param string $content Caption content.
+     * @return string Return value.
+     */
     public static function webvtt(string $content): string {
         $content = self::strip_code_fence($content);
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
@@ -54,6 +66,12 @@ class format {
         return $content;
     }
 
+    /**
+     * Validates WebVTT content.
+     *
+     * @param string $content Caption content.
+     * @return void Return value.
+     */
     public static function assert_webvtt(string $content): void {
         $normalized = str_replace(["\r\n", "\r"], "\n", $content);
         if (!preg_match('/^WEBVTT(?:[ \t].*)?\n/i', $normalized)) {
@@ -67,6 +85,12 @@ class format {
         }
     }
 
+    /**
+     * Returns the cue timing signature from WebVTT content.
+     *
+     * @param string $content Caption content.
+     * @return array Return value.
+     */
     public static function timing_signature(string $content): array {
         self::assert_webvtt($content);
         preg_match_all(
@@ -77,6 +101,12 @@ class format {
         return array_map('trim', $matches[0] ?? []);
     }
 
+    /**
+     * Extracts readable plain text from WebVTT content.
+     *
+     * @param string $content Caption content.
+     * @return string Return value.
+     */
     public static function plain_text(string $content): string {
         self::assert_webvtt($content);
         $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
@@ -117,6 +147,12 @@ class format {
         return implode("\n", $text);
     }
 
+    /**
+     * Normalizes and validates Mermaid mindmap content.
+     *
+     * @param string $content Caption content.
+     * @return string Return value.
+     */
     public static function mermaid(string $content): string {
         $content = self::strip_code_fence($content);
         $content = trim($content);

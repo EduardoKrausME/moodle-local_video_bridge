@@ -33,20 +33,43 @@ use part_of_admin_tree;
  * Describes Video Bridge caption source subplugins to Moodle's plugin manager.
  */
 class videocaptionsource extends base {
+    /**
+     * Returns whether the subplugin may be uninstalled.
+     *
+     * @return bool Return value.
+     */
     public function is_uninstall_allowed(): bool {
         return $this->name !== 'upload';
     }
 
+    /**
+     * Returns the Video Bridge subplugin management URL.
+     *
+     * @return moodle_url Return value.
+     */
     public static function get_manage_url(): moodle_url {
         return new moodle_url('/local/video_bridge/admin_plugins.php', [
             'type' => 'videocaptionsource',
         ]);
     }
 
+    /**
+     * Returns the settings section name.
+     *
+     * @return string Return value.
+     */
     public function get_settings_section_name(): string {
         return $this->type . '_' . $this->name;
     }
 
+    /**
+     * Loads subplugin settings into the administration tree.
+     *
+     * @param part_of_admin_tree $adminroot Administration tree.
+     * @param mixed $parentnodename Parent administration node name.
+     * @param mixed $hassiteconfig Whether the user can configure the site.
+     * @return void Return value.
+     */
     public function load_settings(part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig): void {
         if (!$this->is_installed_and_upgraded() || !$hassiteconfig ||
                 !file_exists($this->full_path('settings.php'))) {

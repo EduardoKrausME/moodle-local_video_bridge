@@ -34,10 +34,20 @@ use stdClass;
  * Implements Bunny Stream embed playback through the Player.js API supported by Bunny Stream.
  */
 class plugin extends plugin_base {
+    /**
+     * Returns the display name.
+     * @return string Return value.
+     */
     public function get_name(): string {
         return get_string('pluginname', 'videoprogresssource_bunnystream');
     }
 
+    /**
+     * Adds plugin-specific form elements.
+     * @param MoodleQuickForm $mform mform.
+     * @param string $sourcefield sourcefield.
+     * @return void Return value.
+     */
     public function add_form_elements(MoodleQuickForm $mform, string $sourcefield): void {
         $mform->addElement(
             'text',
@@ -50,6 +60,12 @@ class plugin extends plugin_base {
         $mform->hideIf('bunnyurl', $sourcefield, 'neq', 'bunnystream');
     }
 
+    /**
+     * Validates submitted form data.
+     * @param array $data data.
+     * @param array $files files.
+     * @return array Return value.
+     */
     public function validation(array $data, array $files): array {
         try {
             $this->build_config((object)$data);
@@ -59,19 +75,41 @@ class plugin extends plugin_base {
         }
     }
 
+    /**
+     * Builds normalized plugin configuration.
+     * @param stdClass $data data.
+     * @return array Return value.
+     */
     public function build_config(stdClass $data): array {
         return self::normalise(trim((string)($data->bunnyurl ?? '')));
     }
 
+    /**
+     * Returns the legacy configuration value.
+     * @param array $config config.
+     * @return string Return value.
+     */
     public function get_legacy_value(array $config): string {
         return self::build_embed_url($config);
     }
 
+    /**
+     * Prepares values used by the edit form.
+     * @param array $defaultvalues defaultvalues.
+     * @param context_module $context context.
+     * @return void Return value.
+     */
     public function prepare_form_data(array &$defaultvalues, context_module $context): void {
         $config = $this->decode_config((object)$defaultvalues);
         $defaultvalues['bunnyurl'] = self::build_embed_url($config);
     }
 
+    /**
+     * Returns browser-safe player configuration.
+     * @param stdClass $activity activity.
+     * @param context_module $context context.
+     * @return array Return value.
+     */
     public function get_player_config(stdClass $activity, context_module $context): array {
         $config = $this->decode_config($activity);
         return [
@@ -81,6 +119,10 @@ class plugin extends plugin_base {
         ];
     }
 
+    /**
+     * Returns capabilities guaranteed by this source.
+     * @return array Return value.
+     */
     public function get_capabilities(): array {
         return [
             'tracking' => true,
@@ -90,26 +132,52 @@ class plugin extends plugin_base {
         ];
     }
 
+    /**
+     * Returns whether the source supports a poster image.
+     * @return bool Return value.
+     */
     public function supports_poster(): bool {
         return false;
     }
 
+    /**
+     * Returns whether uploaded captions are supported.
+     * @return bool Return value.
+     */
     public function supports_uploaded_captions(): bool {
         return false;
     }
 
+    /**
+     * Returns the player template name.
+     * @return string Return value.
+     */
     public function get_player_template(): string {
         return 'videoprogresssource_bunnystream/player';
     }
 
+    /**
+     * Returns the AMD player adapter module.
+     * @return string Return value.
+     */
     public function get_amd_module(): string {
         return 'videoprogresssource_bunnystream/player';
     }
 
+    /**
+     * Converts a legacy value into normalized configuration.
+     * @param string $legacyvalue legacyvalue.
+     * @return array Return value.
+     */
     protected function get_legacy_config(string $legacyvalue): array {
         return self::normalise($legacyvalue);
     }
 
+    /**
+     * Normalizes and validates the source value.
+     * @param string $value value.
+     * @return array Return value.
+     */
     private static function normalise(string $value): array {
         $value = trim($value);
 
@@ -144,6 +212,11 @@ class plugin extends plugin_base {
         ];
     }
 
+    /**
+     * Builds the provider embed URL.
+     * @param array $config config.
+     * @return string Return value.
+     */
     private static function build_embed_url(array $config): string {
         $libraryid = (string)($config['libraryid'] ?? '');
         $videoid = (string)($config['videoid'] ?? '');

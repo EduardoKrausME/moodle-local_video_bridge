@@ -45,6 +45,12 @@ class manager {
     /** @var string Field storing normalized caption configuration. */
     private string $configfield;
 
+    /**
+     * Initializes the caption manager.
+     *
+     * @param string $sourcefield Caption source field name.
+     * @param string $configfield Caption configuration field name.
+     */
     public function __construct(
         string $sourcefield = 'captionsource',
         string $configfield = 'captionconfig'
@@ -59,6 +65,11 @@ class manager {
         $this->configfield = $configfield;
     }
 
+    /**
+     * Returns discovered caption source plugins.
+     *
+     * @return array Return value.
+     */
     public function get_plugins(): array {
         if ($this->plugins !== null) {
             return $this->plugins;
@@ -91,6 +102,12 @@ class manager {
         return $this->plugins;
     }
 
+    /**
+     * Returns one caption source plugin.
+     *
+     * @param string $name Plugin short name.
+     * @return plugin_base Return value.
+     */
     public function get_plugin(string $name): plugin_base {
         $name = clean_param($name, PARAM_PLUGIN);
         $plugins = $this->get_plugins();
@@ -100,6 +117,11 @@ class manager {
         return $plugins[$name];
     }
 
+    /**
+     * Returns caption source options for forms.
+     *
+     * @return array Return value.
+     */
     public function get_options(): array {
         $options = [];
         foreach ($this->get_plugins() as $name => $plugin) {
@@ -108,10 +130,22 @@ class manager {
         return $options;
     }
 
+    /**
+     * Returns the default caption source.
+     *
+     * @return string Return value.
+     */
     public function get_default_source(): string {
         return (string)(array_key_first($this->get_plugins()) ?? '');
     }
 
+    /**
+     * Adds caption source form elements.
+     *
+     * @param MoodleQuickForm $mform Moodle form instance.
+     * @param ?string $sourcefield Caption source field name.
+     * @return void Return value.
+     */
     public function add_form_elements(MoodleQuickForm $mform, ?string $sourcefield = null): void {
         $sourcefield ??= $this->sourcefield;
         foreach ($this->get_plugins() as $plugin) {
@@ -119,6 +153,13 @@ class manager {
         }
     }
 
+    /**
+     * Validates caption source form data.
+     *
+     * @param array $data Submitted form data.
+     * @param array $files Submitted files.
+     * @return array Return value.
+     */
     public function validation(array $data, array $files): array {
         $source = clean_param((string)($data[$this->sourcefield] ?? ''), PARAM_PLUGIN);
         if ($source === '') {
@@ -132,6 +173,12 @@ class manager {
         }
     }
 
+    /**
+     * Normalizes caption source configuration on an activity record.
+     *
+     * @param stdClass $data Submitted form data.
+     * @return array Return value.
+     */
     public function normalise_record(stdClass $data): array {
         $source = clean_param((string)($data->{$this->sourcefield} ?? ''), PARAM_PLUGIN);
         if ($source === '') {
@@ -147,6 +194,13 @@ class manager {
         return $config;
     }
 
+    /**
+     * Prepares caption values for the edit form.
+     *
+     * @param array $defaultvalues Form default values.
+     * @param context_module $context Module context.
+     * @return void Return value.
+     */
     public function prepare_form_data(array &$defaultvalues, context_module $context): void {
         $source = clean_param((string)($defaultvalues[$this->sourcefield] ?? ''), PARAM_PLUGIN);
         if ($source === '') {
@@ -171,6 +225,14 @@ class manager {
         }
     }
 
+    /**
+     * Saves files owned by the selected caption source.
+     *
+     * @param stdClass $data Submitted form data.
+     * @param context_module $context Module context.
+     * @param ?string $previoussource Previously selected caption source.
+     * @return void Return value.
+     */
     public function save_files(stdClass $data, context_module $context, ?string $previoussource = null): void {
         $source = clean_param((string)($data->{$this->sourcefield} ?? ''), PARAM_PLUGIN);
         $plugins = $this->get_plugins();
@@ -186,12 +248,25 @@ class manager {
         $this->get_plugin($source)->save_files($data, $context);
     }
 
+    /**
+     * Deletes files owned by caption sources.
+     *
+     * @param context_module $context Module context.
+     * @return void Return value.
+     */
     public function delete_files(context_module $context): void {
         foreach ($this->get_plugins() as $plugin) {
             $plugin->delete_files($context);
         }
     }
 
+    /**
+     * Returns normalized browser-ready caption tracks.
+     *
+     * @param stdClass $activity Activity record.
+     * @param context_module $context Module context.
+     * @return array Return value.
+     */
     public function get_tracks(stdClass $activity, context_module $context): array {
         $record = $this->provider_record($activity);
         $source = clean_param((string)$record->captionsource, PARAM_PLUGIN);
@@ -219,6 +294,12 @@ class manager {
         return $normalized;
     }
 
+    /**
+     * Builds the provider-facing activity record.
+     *
+     * @param stdClass $record Activity record.
+     * @return stdClass Return value.
+     */
     private function provider_record(stdClass $record): stdClass {
         $copy = clone $record;
         $copy->captionsource = $record->{$this->sourcefield} ?? '';

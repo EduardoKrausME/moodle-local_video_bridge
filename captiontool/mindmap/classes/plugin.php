@@ -32,34 +32,69 @@ use local_video_bridge\captiontool\result;
  * Produces a Mermaid mind map from caption content.
  */
 class plugin extends plugin_base {
+    /**
+     * Returns the plugin sort order.
+     * @return int Return value.
+     */
     public function get_sort_order(): int {
         return 40;
     }
 
+    /**
+     * Returns the plugin component name.
+     * @return string Return value.
+     */
     public function get_component(): string {
         return 'videocaptiontool_mindmap';
     }
 
+    /**
+     * Returns the display name.
+     * @return string Return value.
+     */
     public function get_name(): string {
         return get_string('pluginname', 'videocaptiontool_mindmap');
     }
 
+    /**
+     * Returns the plugin description.
+     * @return string Return value.
+     */
     public function get_description(): string {
         return get_string('description', 'videocaptiontool_mindmap');
     }
 
+    /**
+     * Returns the expected input format.
+     * @return string Return value.
+     */
     public function get_input_format(): string {
         return 'webvtt';
     }
 
+    /**
+     * Returns the produced output format.
+     * @return string Return value.
+     */
     public function get_output_format(): string {
         return 'mermaid';
     }
 
+    /**
+     * Returns the default AI Bridge purpose identifier.
+     * @return string Return value.
+     */
     protected function get_default_purpose_idnumber(): string {
         return 'video-caption-mindmap';
     }
 
+    /**
+     * Executes the caption processing tool.
+     * @param string $input input.
+     * @param array $options options.
+     * @param ?int $userid userid.
+     * @return result Return value.
+     */
     public function execute(string $input, array $options = [], ?int $userid = null): result {
         $input = $this->assert_input($input);
         $plain = format::plain_text($input);

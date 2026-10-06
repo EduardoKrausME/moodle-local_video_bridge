@@ -34,10 +34,20 @@ use stdClass;
  * Plays Qencode HLS and browser-compatible playback URLs through the shared HTML5/HLS adapters.
  */
 class plugin extends plugin_base {
+    /**
+     * Returns the display name.
+     * @return string Return value.
+     */
     public function get_name(): string {
         return get_string('pluginname', 'videoprogresssource_qencode');
     }
 
+    /**
+     * Adds plugin-specific form elements.
+     * @param MoodleQuickForm $mform mform.
+     * @param string $sourcefield sourcefield.
+     * @return void Return value.
+     */
     public function add_form_elements(MoodleQuickForm $mform, string $sourcefield): void {
         $mform->addElement(
             'url',
@@ -51,6 +61,12 @@ class plugin extends plugin_base {
         $mform->hideIf('qencodeurl', $sourcefield, 'neq', 'qencode');
     }
 
+    /**
+     * Validates submitted form data.
+     * @param array $data data.
+     * @param array $files files.
+     * @return array Return value.
+     */
     public function validation(array $data, array $files): array {
         try {
             $this->build_config((object)$data);
@@ -60,19 +76,41 @@ class plugin extends plugin_base {
         }
     }
 
+    /**
+     * Builds normalized plugin configuration.
+     * @param stdClass $data data.
+     * @return array Return value.
+     */
     public function build_config(stdClass $data): array {
         return self::normalise(trim((string)($data->qencodeurl ?? '')));
     }
 
+    /**
+     * Returns the legacy configuration value.
+     * @param array $config config.
+     * @return string Return value.
+     */
     public function get_legacy_value(array $config): string {
         return (string)($config['url'] ?? '');
     }
 
+    /**
+     * Prepares values used by the edit form.
+     * @param array $defaultvalues defaultvalues.
+     * @param context_module $context context.
+     * @return void Return value.
+     */
     public function prepare_form_data(array &$defaultvalues, context_module $context): void {
         $config = $this->decode_config((object)$defaultvalues);
         $defaultvalues['qencodeurl'] = (string)($config['url'] ?? '');
     }
 
+    /**
+     * Returns browser-safe player configuration.
+     * @param stdClass $activity activity.
+     * @param context_module $context context.
+     * @return array Return value.
+     */
     public function get_player_config(stdClass $activity, context_module $context): array {
         global $CFG;
 
@@ -84,18 +122,36 @@ class plugin extends plugin_base {
         ];
     }
 
+    /**
+     * Returns the player template name.
+     * @return string Return value.
+     */
     public function get_player_template(): string {
         return 'videoprogresssource_qencode/player';
     }
 
+    /**
+     * Returns the AMD player adapter module.
+     * @return string Return value.
+     */
     public function get_amd_module(): string {
         return 'videoprogresssource_qencode/player';
     }
 
+    /**
+     * Converts a legacy value into normalized configuration.
+     * @param string $legacyvalue legacyvalue.
+     * @return array Return value.
+     */
     protected function get_legacy_config(string $legacyvalue): array {
         return self::normalise($legacyvalue);
     }
 
+    /**
+     * Normalizes and validates the source value.
+     * @param string $url url.
+     * @return array Return value.
+     */
     private static function normalise(string $url): array {
         if (!filter_var($url, FILTER_VALIDATE_URL) ||
                 strtolower((string)parse_url($url, PHP_URL_SCHEME)) !== 'https') {

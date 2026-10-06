@@ -29,6 +29,8 @@ use local_video_bridge\progress\manager;
 
 /**
  * Tests normalized viewing-map bucket calculations.
+ *
+ * @covers \local_video_bridge\progress\manager
  */
 final class progress_manager_test extends advanced_testcase {
     public function test_short_video_uses_one_bucket_per_second(): void {

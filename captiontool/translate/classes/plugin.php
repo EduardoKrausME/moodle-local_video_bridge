@@ -33,34 +33,77 @@ use moodle_exception;
  * Translates WebVTT text while enforcing unchanged cue timing.
  */
 class plugin extends plugin_base {
+    /**
+     * Returns the plugin sort order.
+     *
+     * @return int Sort order.
+     */
     public function get_sort_order(): int {
         return 20;
     }
 
+    /**
+     * Returns the plugin component name.
+     *
+     * @return string Component name.
+     */
     public function get_component(): string {
         return 'videocaptiontool_translate';
     }
 
+    /**
+     * Returns the plugin display name.
+     *
+     * @return string Display name.
+     */
     public function get_name(): string {
         return get_string('pluginname', 'videocaptiontool_translate');
     }
 
+    /**
+     * Returns the plugin description.
+     *
+     * @return string Description.
+     */
     public function get_description(): string {
         return get_string('description', 'videocaptiontool_translate');
     }
 
+    /**
+     * Returns the expected input format.
+     *
+     * @return string Input format.
+     */
     public function get_input_format(): string {
         return 'webvtt';
     }
 
+    /**
+     * Returns the produced output format.
+     *
+     * @return string Output format.
+     */
     public function get_output_format(): string {
         return 'webvtt';
     }
 
+    /**
+     * Returns the default AI Bridge purpose identifier.
+     *
+     * @return string Purpose identifier.
+     */
     protected function get_default_purpose_idnumber(): string {
         return 'video-caption-translate';
     }
 
+    /**
+     * Translates WebVTT captions while preserving cue timing.
+     *
+     * @param string $input WebVTT caption content.
+     * @param array $options Tool execution options.
+     * @param int|null $userid Optional user id.
+     * @return result Translation result.
+     */
     public function execute(string $input, array $options = [], ?int $userid = null): result {
         $input = $this->assert_input($input);
         format::assert_webvtt($input);

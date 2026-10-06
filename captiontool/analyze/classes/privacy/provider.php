@@ -24,7 +24,15 @@
 
 namespace videocaptiontool_analyze\privacy;
 
+/**
+ * Privacy provider for this caption tool.
+ */
 class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Returns the privacy provider reason string.
+     *
+     * @return string Return value.
+     */
     public static function get_reason(): string {
         return 'privacy:metadata';
     }

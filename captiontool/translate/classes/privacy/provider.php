@@ -24,7 +24,15 @@
 
 namespace videocaptiontool_translate\privacy;
 
+/**
+ * Privacy provider for the caption translation tool.
+ */
 class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Returns the privacy provider reason string.
+     *
+     * @return string Language string identifier.
+     */
     public static function get_reason(): string {
         return 'privacy:metadata';
     }

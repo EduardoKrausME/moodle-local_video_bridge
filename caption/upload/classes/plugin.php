@@ -39,14 +39,28 @@ class plugin extends plugin_base {
     /** @var int Maximum size of each uploaded caption file. */
     private const MAX_BYTES = 5242880;
 
+    /**
+     * Returns the plugin sort order.
+     * @return int Return value.
+     */
     public function get_sort_order(): int {
         return 10;
     }
 
+    /**
+     * Returns the display name.
+     * @return string Return value.
+     */
     public function get_name(): string {
         return get_string('pluginname', 'videocaptionsource_upload');
     }
 
+    /**
+     * Adds plugin-specific form elements.
+     * @param MoodleQuickForm $mform mform.
+     * @param string $sourcefield sourcefield.
+     * @return void Return value.
+     */
     public function add_form_elements(MoodleQuickForm $mform, string $sourcefield): void {
         $mform->addElement('filemanager', 'captionfiles',
             get_string('captionfiles', 'videocaptionsource_upload'), null, [
@@ -59,6 +73,12 @@ class plugin extends plugin_base {
         $mform->hideIf('captionfiles', $sourcefield, 'neq', 'upload');
     }
 
+    /**
+     * Validates submitted form data.
+     * @param array $data data.
+     * @param array $files files.
+     * @return array Return value.
+     */
     public function validation(array $data, array $files): array {
         global $USER;
 
@@ -103,10 +123,21 @@ class plugin extends plugin_base {
         return [];
     }
 
+    /**
+     * Builds normalized plugin configuration.
+     * @param stdClass $data data.
+     * @return array Return value.
+     */
     public function build_config(stdClass $data): array {
         return ['storage' => 'moodle'];
     }
 
+    /**
+     * Prepares values used by the edit form.
+     * @param array $defaultvalues defaultvalues.
+     * @param context_module $context context.
+     * @return void Return value.
+     */
     public function prepare_form_data(array &$defaultvalues, context_module $context): void {
         $draftitemid = file_get_submitted_draft_itemid('captionfiles');
         file_prepare_draft_area(
@@ -125,6 +156,12 @@ class plugin extends plugin_base {
         $defaultvalues['captionfiles'] = $draftitemid;
     }
 
+    /**
+     * Saves files owned by this caption source.
+     * @param stdClass $data data.
+     * @param context_module $context context.
+     * @return void Return value.
+     */
     public function save_files(stdClass $data, context_module $context): void {
         global $USER;
 
@@ -181,10 +218,21 @@ class plugin extends plugin_base {
         }
     }
 
+    /**
+     * Deletes files owned by this caption source.
+     * @param context_module $context context.
+     * @return void Return value.
+     */
     public function delete_files(context_module $context): void {
         get_file_storage()->delete_area_files($context->id, 'local_video_bridge', 'caption', 0);
     }
 
+    /**
+     * Returns browser-ready caption tracks.
+     * @param stdClass $activity activity.
+     * @param context_module $context context.
+     * @return array Return value.
+     */
     public function get_tracks(stdClass $activity, context_module $context): array {
         $files = get_file_storage()->get_area_files(
             $context->id,
@@ -223,6 +271,11 @@ class plugin extends plugin_base {
         return $tracks;
     }
 
+    /**
+     * Extracts caption metadata from a filename.
+     * @param string $filename filename.
+     * @return array Return value.
+     */
     private static function metadata_from_filename(string $filename): array {
         $stem = pathinfo($filename, PATHINFO_FILENAME);
         $isdefault = false;
@@ -255,6 +308,11 @@ class plugin extends plugin_base {
         ];
     }
 
+    /**
+     * Converts SRT caption content to WebVTT.
+     * @param string $content content.
+     * @return string Return value.
+     */
     private static function convert_srt_to_vtt(string $content): string {
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
         $content = str_replace(["\r\n", "\r"], "\n", $content);
@@ -270,6 +328,11 @@ class plugin extends plugin_base {
         return "WEBVTT\n\n" . implode("\n", $lines) . "\n";
     }
 
+    /**
+     * Validates WebVTT caption content.
+     * @param string $content content.
+     * @return void Return value.
+     */
     private static function validate_webvtt(string $content): void {
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
         $content = str_replace(["\r\n", "\r"], "\n", $content);

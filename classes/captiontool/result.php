@@ -28,10 +28,25 @@ namespace local_video_bridge\captiontool;
  * Immutable caption tool result.
  */
 class result {
-    public function __construct(
-        public readonly string $content,
-        public readonly string $format,
-        public readonly array $metadata = [],
-    ) {
+    /** @var string Caption tool output content. */
+    public readonly string $content;
+
+    /** @var string Caption tool output format. */
+    public readonly string $format;
+
+    /** @var array Additional result metadata. */
+    public readonly array $metadata;
+
+    /**
+     * Initializes the caption tool result.
+     *
+     * @param string $content Caption tool output content.
+     * @param string $format Caption tool output format.
+     * @param array $metadata Additional result metadata.
+     */
+    public function __construct(string $content, string $format, array $metadata = []) {
+        $this->content = $content;
+        $this->format = $format;
+        $this->metadata = $metadata;
     }
 }

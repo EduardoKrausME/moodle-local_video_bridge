@@ -35,6 +35,11 @@ class manager {
     /** @var plugin_base[]|null */
     private ?array $plugins = null;
 
+    /**
+     * Returns discovered caption tool plugins.
+     *
+     * @return array Return value.
+     */
     public function get_plugins(): array {
         if ($this->plugins !== null) {
             return $this->plugins;
@@ -66,6 +71,12 @@ class manager {
         return $this->plugins;
     }
 
+    /**
+     * Returns one caption tool plugin.
+     *
+     * @param string $name Tool short name.
+     * @return plugin_base Return value.
+     */
     public function get_plugin(string $name): plugin_base {
         $name = clean_param($name, PARAM_PLUGIN);
         $plugins = $this->get_plugins();
@@ -75,6 +86,11 @@ class manager {
         return $plugins[$name];
     }
 
+    /**
+     * Returns caption tool options for forms.
+     *
+     * @return array Return value.
+     */
     public function get_options(): array {
         $options = [];
         foreach ($this->get_plugins() as $name => $plugin) {
@@ -83,6 +99,11 @@ class manager {
         return $options;
     }
 
+    /**
+     * Returns metadata describing available caption tools.
+     *
+     * @return array Return value.
+     */
     public function describe(): array {
         $tools = [];
         foreach ($this->get_plugins() as $name => $plugin) {
@@ -97,6 +118,15 @@ class manager {
         return $tools;
     }
 
+    /**
+     * Executes a caption processing tool.
+     *
+     * @param string $name Tool short name.
+     * @param string $input Caption input.
+     * @param array $options Tool execution options.
+     * @param ?int $userid Optional user id.
+     * @return result Return value.
+     */
     public function execute(string $name, string $input, array $options = [], ?int $userid = null): result {
         return $this->get_plugin($name)->execute($input, $options, $userid);
     }
