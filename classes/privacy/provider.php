@@ -64,13 +64,31 @@ class provider implements
             'contextid' => 'privacy:metadata:session:contextid',
             'component' => 'privacy:metadata:session:component',
             'itemid' => 'privacy:metadata:session:itemid',
+            'source' => 'privacy:metadata:session:source',
             'mediahash' => 'privacy:metadata:session:mediahash',
             'userid' => 'privacy:metadata:session:userid',
             'sessionid' => 'privacy:metadata:session:sessionid',
+            'level' => 'privacy:metadata:session:level',
             'startedat' => 'privacy:metadata:session:startedat',
             'endedat' => 'privacy:metadata:session:endedat',
+            'duration' => 'privacy:metadata:session:duration',
             'watchtime' => 'privacy:metadata:session:watchtime',
+            'plays' => 'privacy:metadata:session:plays',
+            'pauses' => 'privacy:metadata:session:pauses',
+            'seeks' => 'privacy:metadata:session:seeks',
+            'replays' => 'privacy:metadata:session:replays',
+            'skips' => 'privacy:metadata:session:skips',
+            'dropoff' => 'privacy:metadata:session:dropoff',
+            'maxposition' => 'privacy:metadata:session:maxposition',
+            'speedavg' => 'privacy:metadata:session:speedavg',
             'ranges' => 'privacy:metadata:session:ranges',
+            'pausepoints' => 'privacy:metadata:session:pausepoints',
+            'skippoints' => 'privacy:metadata:session:skippoints',
+            'replaypoints' => 'privacy:metadata:session:replaypoints',
+            'rates' => 'privacy:metadata:session:rates',
+            'continuousblocks' => 'privacy:metadata:session:continuousblocks',
+            'inactivitygaps' => 'privacy:metadata:session:inactivitygaps',
+            'timecreated' => 'privacy:metadata:session:timecreated',
             'timemodified' => 'privacy:metadata:session:timemodified',
         ], 'privacy:metadata:session');
 
@@ -117,29 +135,27 @@ class provider implements
                 ['contextid' => $context->id, 'userid' => $userid],
                 'id ASC'
             );
-            if (!$records) {
-                continue;
-            }
+            if ($records) {
+                $export = [];
+                foreach ($records as $record) {
+                    $export[] = (object)[
+                        'component' => $record->component,
+                        'itemid' => $record->itemid,
+                        'source' => $record->source,
+                        'currenttime' => $record->currenttime,
+                        'duration' => $record->duration,
+                        'percent' => $record->percent,
+                        'map' => json_decode($record->map, true) ?: [],
+                        'timecreated' => transform::datetime($record->timecreated),
+                        'timemodified' => transform::datetime($record->timemodified),
+                    ];
+                }
 
-            $export = [];
-            foreach ($records as $record) {
-                $export[] = (object)[
-                    'component' => $record->component,
-                    'itemid' => $record->itemid,
-                    'source' => $record->source,
-                    'currenttime' => $record->currenttime,
-                    'duration' => $record->duration,
-                    'percent' => $record->percent,
-                    'map' => json_decode($record->map, true) ?: [],
-                    'timecreated' => transform::datetime($record->timecreated),
-                    'timemodified' => transform::datetime($record->timemodified),
-                ];
+                writer::with_context($context)->export_data(
+                    [get_string('privacy:progress', 'local_video_bridge')],
+                    (object)['progress' => $export]
+                );
             }
-
-            writer::with_context($context)->export_data(
-                [get_string('privacy:progress', 'local_video_bridge')],
-                (object)['progress' => $export]
-            );
 
             $sessions = $DB->get_records(
                 'local_video_bridge_session',
@@ -152,7 +168,10 @@ class provider implements
                     $sessionexport[] = (object)[
                         'component' => $session->component,
                         'itemid' => $session->itemid,
+                        'source' => $session->source,
+                        'mediahash' => $session->mediahash,
                         'sessionid' => $session->sessionid,
+                        'level' => $session->level,
                         'startedat' => transform::datetime($session->startedat),
                         'endedat' => $session->endedat ? transform::datetime($session->endedat) : null,
                         'duration' => $session->duration,
@@ -160,7 +179,20 @@ class provider implements
                         'plays' => $session->plays,
                         'pauses' => $session->pauses,
                         'seeks' => $session->seeks,
+                        'replays' => $session->replays,
+                        'skips' => $session->skips,
+                        'dropoff' => $session->dropoff,
+                        'maxposition' => $session->maxposition,
+                        'speedavg' => $session->speedavg,
                         'ranges' => json_decode($session->ranges, true) ?: [],
+                        'pausepoints' => json_decode($session->pausepoints, true) ?: [],
+                        'skippoints' => json_decode($session->skippoints, true) ?: [],
+                        'replaypoints' => json_decode($session->replaypoints, true) ?: [],
+                        'rates' => json_decode($session->rates, true) ?: [],
+                        'continuousblocks' => json_decode((string)($session->continuousblocks ?? ''), true) ?: [],
+                        'inactivitygaps' => json_decode((string)($session->inactivitygaps ?? ''), true) ?: [],
+                        'timecreated' => transform::datetime($session->timecreated),
+                        'timemodified' => transform::datetime($session->timemodified),
                     ];
                 }
                 writer::with_context($context)->export_data(
