@@ -1,10 +1,18 @@
 <?php
-// This file is part of Moodle - http://moodle.org/.
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Generic media configuration for multi-media Video Bridge consumers.
@@ -84,32 +92,56 @@ final class config {
         $this->posterurl = $posterurl;
     }
 
-    /** @return string Source short name. */
+    /**
+     * Returns the source short name.
+     *
+     * @return string Source short name.
+     */
     public function get_source(): string {
         return $this->source;
     }
 
-    /** @return string Normalized source configuration. */
+    /**
+     * Returns the normalized source configuration.
+     *
+     * @return string Normalized source configuration.
+     */
     public function get_sourceconfig(): string {
         return $this->sourceconfig;
     }
 
-    /** @return int Stable media item id. */
+    /**
+     * Returns the stable media item id.
+     *
+     * @return int Stable media item id.
+     */
     public function get_mediaid(): int {
         return $this->mediaid;
     }
 
-    /** @return string Caption source short name. */
+    /**
+     * Returns the caption source short name.
+     *
+     * @return string Caption source short name.
+     */
     public function get_captionsource(): string {
         return $this->captionsource;
     }
 
-    /** @return string Normalized caption configuration. */
+    /**
+     * Returns the normalized caption configuration.
+     *
+     * @return string Normalized caption configuration.
+     */
     public function get_captionconfig(): string {
         return $this->captionconfig;
     }
 
-    /** @return string Poster URL. */
+    /**
+     * Returns the poster URL.
+     *
+     * @return string Poster URL.
+     */
     public function get_posterurl(): string {
         return $this->posterurl;
     }
