@@ -40,7 +40,7 @@
                 <FIELD NAME="mediahash" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="sessionid" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="level" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="basic" SEQUENCE="false"/>
+                <FIELD NAME="level" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="basic" SEQUENCE="false"/>
                 <FIELD NAME="startedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="endedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
                 <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -58,6 +58,8 @@
                 <FIELD NAME="skippoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="replaypoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="rates" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="continuousblocks" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="inactivitygaps" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
