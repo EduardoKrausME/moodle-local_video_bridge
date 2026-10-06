@@ -299,5 +299,29 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026100613, 'local', 'video_bridge');
     }
 
+    if ($oldversion < 2026100615) {
+        $dbman = $DB->get_manager();
+        $table = new xmldb_table('local_video_bridge_session');
+        $fields = [
+            new xmldb_field('sessionduration', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'duration'),
+            new xmldb_field('pausedtime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'watchtime'),
+            new xmldb_field('startposition', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'pausedtime'),
+            new xmldb_field('endposition', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'startposition'),
+            new xmldb_field('percentstart', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'endposition'),
+            new xmldb_field('percentend', XMLDB_TYPE_INTEGER, '3', null, XMLDB_NOTNULL, null, '0', 'percentstart'),
+            new xmldb_field('ratechanges', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'speedavg'),
+            new xmldb_field('receivedended', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'ratechanges'),
+            new xmldb_field('endreason', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, '', 'receivedended'),
+        ];
+        if ($dbman->table_exists($table)) {
+            foreach ($fields as $field) {
+                if (!$dbman->field_exists($table, $field)) {
+                    $dbman->add_field($table, $field);
+                }
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026100615, 'local', 'video_bridge');
+    }
+
     return true;
 }
