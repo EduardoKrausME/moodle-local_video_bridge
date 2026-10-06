@@ -71,6 +71,8 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
             this.renderedLength = 0;
             this.mapElement = null;
             this.percentElement = null;
+            this.sessionStartedAt = Date.now();
+            this.pauseStartedAt = 0;
             this.telemetry = this.createTelemetry();
             this.recordEvent('sessionstart', {position: this.currentTime});
             this.lastTickAt = Date.now();
@@ -105,6 +107,9 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
                 endedat: 0,
                 duration: Math.floor(this.duration || 0),
                 watchtime: 0,
+                pausedtime: 0,
+                sessionseconds: 0,
+                startposition: Math.floor(this.currentTime || 0),
                 plays: 0,
                 pauses: 0,
                 seeks: 0,
@@ -275,6 +280,10 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
             if (typeof this.adapter.onPlay === 'function') {
                 this.adapter.onPlay(() => {
                     this.telemetry.plays++;
+                    if (this.pauseStartedAt) {
+                        this.telemetry.pausedtime += Math.max(0, (Date.now() - this.pauseStartedAt) / 1000);
+                        this.pauseStartedAt = 0;
+                    }
                     this.recordEvent('play', {position: this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime});
                     this.recordInactivity();
                     this.playing = true;
@@ -288,6 +297,9 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
                     this.stopContinuous(this.adapter.getCurrentTime ? this.adapter.getCurrentTime() : this.currentTime);
                     this.playing = false;
                     this.idleStartedAt = Date.now();
+                    if (!this.pauseStartedAt) {
+                        this.pauseStartedAt = Date.now();
+                    }
                     if (this.telemetryEnabled('recordpauses')) {
                         this.telemetry.pauses++;
                     }
@@ -487,9 +499,15 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
                 Object.entries(this.telemetry.rates || {}).forEach(([rate, seconds]) => {
                     rates[rate] = Math.floor(Number(seconds) || 0);
                 });
+                const pausedtime = this.telemetry.pausedtime
+                    + (this.pauseStartedAt ? Math.max(0, (Date.now() - this.pauseStartedAt) / 1000) : 0);
                 const payload = Object.assign({}, this.telemetry, {
                     duration: Math.floor(this.duration || 0),
                     watchtime: Math.floor(this.telemetry.watchtime || 0),
+                    pausedtime: Math.floor(pausedtime),
+                    sessionseconds: Math.floor(Math.max(0, (Date.now() - this.sessionStartedAt) / 1000)),
+                    startposition: Math.floor(this.telemetry.startposition || 0),
+                    endposition: Math.floor(this.currentTime || 0),
                     dropoff: Math.floor(this.currentTime || 0),
                     maxposition: Math.floor(this.telemetry.maxposition || 0),
                     speedavg: Number(this.telemetry.speedavg || 1),
