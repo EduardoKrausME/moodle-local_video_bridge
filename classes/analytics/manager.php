@@ -224,7 +224,9 @@ class manager {
         $ended = (int)($session->endedat ?? 0) > 0;
         $serverstart = (int)($session->timecreated ?? 0);
         $serverend = (int)($session->timemodified ?? 0);
-        $realtime = max(0, min(86400, $serverend - $serverstart));
+        $realtime = !empty($session->sessionduration)
+            ? max(0, min(86400, (int)$session->sessionduration))
+            : max(0, min(86400, $serverend - $serverstart));
 
         return [
             'session_id' => (string)($session->sessionid ?? ''),
@@ -233,6 +235,13 @@ class manager {
             'duration' => $duration,
             'playback_time' => max(0.0, (float)($session->watchtime ?? 0)),
             'real_session_time' => (float)$realtime,
+            'paused_time' => max(0.0, (float)($session->pausedtime ?? 0)),
+            'start_position' => max(0.0, (float)($session->startposition ?? 0)),
+            'end_position' => max(0.0, (float)($session->endposition ?? $session->dropoff ?? 0)),
+            'percent_start' => max(0, min(100, (int)($session->percentstart ?? 0))),
+            'percent_end' => max(0, min(100, (int)($session->percentend ?? 0))),
+            'rate_changes' => max(0, (int)($session->ratechanges ?? 0)),
+            'end_reason' => (string)($session->endreason ?? ''),
             'maximum_playback_rate' => round($maximumrate, 3),
             'average_playback_rate' => $rateweight > 0
                 ? round($weightedrate / $rateweight, 3)
