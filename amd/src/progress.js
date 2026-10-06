@@ -71,19 +71,131 @@ define(['core/templates'], function(Templates) {
             this.renderedLength = 0;
             this.mapElement = null;
             this.percentElement = null;
-            this.pageHideHandler = () => this.flush(true);
+            this.telemetry = this.createTelemetry();
+            this.lastTickAt = Date.now();
+            this.rateWeight = 0;
+            this.rateSeconds = 0;
+            this.pageHideHandler = () => {
+                this.telemetry.endedat = Math.floor(Date.now() / 1000);
+                this.flush(true);
+            };
 
             this.bind();
             this.render();
         }
 
+        createTelemetry() {
+            const level = String(this.config.telemetrylevel || 'basic').toLowerCase();
+            const random = (window.crypto && window.crypto.randomUUID)
+                ? window.crypto.randomUUID()
+                : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+            return {
+                level: level,
+                sessionid: random.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64),
+                startedat: Math.floor(Date.now() / 1000),
+                endedat: 0,
+                duration: Math.floor(this.duration || 0),
+                watchtime: 0,
+                plays: 0,
+                pauses: 0,
+                seeks: 0,
+                replays: 0,
+                skips: 0,
+                dropoff: Math.floor(this.currentTime || 0),
+                maxposition: Math.floor(this.currentTime || 0),
+                speedavg: Number(this.adapter.getPlaybackRate ? this.adapter.getPlaybackRate() : 1) || 1,
+                ranges: [],
+                pausepoints: [],
+                skippoints: [],
+                replaypoints: [],
+                rates: {},
+            };
+        }
+
+        addRange(start, end) {
+            if (this.telemetry.level !== 'detailed' || end <= start) {
+                return;
+            }
+            const ranges = this.telemetry.ranges;
+            const cleanStart = Math.max(0, Number(start) || 0);
+            const cleanEnd = Math.max(cleanStart, Number(end) || 0);
+            const last = ranges[ranges.length - 1];
+            if (last && cleanStart <= last[1] + 1) {
+                last[1] = Math.max(last[1], cleanEnd);
+            } else if (ranges.length < 500) {
+                ranges.push([cleanStart, cleanEnd]);
+            }
+        }
+
+        observeTelemetry(position) {
+            const now = Date.now();
+            const wallSeconds = Math.max(0, Math.min(5, (now - this.lastTickAt) / 1000));
+            const previous = Number(this.lastPosition || 0);
+            const delta = position - previous;
+            const rate = Number(this.adapter.getPlaybackRate ? this.adapter.getPlaybackRate() : 1) || 1;
+
+            if (delta >= 0 && delta <= Math.max(5, wallSeconds * Math.max(1, rate) * 3)) {
+                if (delta > 0) {
+                    this.telemetry.watchtime += wallSeconds;
+                    this.rateWeight += rate * wallSeconds;
+                    this.rateSeconds += wallSeconds;
+                    this.telemetry.rates[String(rate)] =
+                        (Number(this.telemetry.rates[String(rate)]) || 0) + wallSeconds;
+                    this.addRange(previous, position);
+                }
+            } else if (Math.abs(delta) > 1) {
+                this.telemetry.seeks++;
+                if (delta > 0) {
+                    this.telemetry.skips++;
+                    if (this.telemetry.level === 'detailed' && this.telemetry.skippoints.length < 1000) {
+                        this.telemetry.skippoints.push([previous, position]);
+                    }
+                } else {
+                    this.telemetry.replays++;
+                    if (this.telemetry.level === 'detailed' && this.telemetry.replaypoints.length < 1000) {
+                        this.telemetry.replaypoints.push([position, previous]);
+                    }
+                }
+            }
+
+            this.telemetry.dropoff = Math.max(0, position);
+            this.telemetry.maxposition = Math.max(this.telemetry.maxposition, position);
+            this.telemetry.duration = Math.max(this.telemetry.duration, this.duration);
+            this.telemetry.speedavg = this.rateSeconds > 0 ? this.rateWeight / this.rateSeconds : rate;
+            this.lastTickAt = now;
+        }
+
         bind() {
+            if (typeof this.adapter.onPlay === 'function') {
+                this.adapter.onPlay(() => {
+                    this.telemetry.plays++;
+                    this.lastTickAt = Date.now();
+                    this.dirty = true;
+                });
+            }
+            if (typeof this.adapter.onPause === 'function') {
+                this.adapter.onPause(() => {
+                    this.telemetry.pauses++;
+                    if (this.telemetry.level === 'detailed' && this.telemetry.pausepoints.length < 1000) {
+                        this.telemetry.pausepoints.push(Number(this.adapter.getCurrentTime() || this.currentTime || 0));
+                    }
+                    this.dirty = true;
+                });
+            }
+            if (typeof this.adapter.onRateChange === 'function') {
+                this.adapter.onRateChange(() => {
+                    this.lastTickAt = Date.now();
+                    this.dirty = true;
+                });
+            }
+
             this.adapter.onTimeUpdate((position) => {
                 this.currentTime = Number(position || 0);
                 const duration = Number(this.adapter.getDuration() || this.duration || 0);
                 if (duration > 0) {
                     this.duration = duration;
                 }
+                this.observeTelemetry(this.currentTime);
                 this.markPosition(this.currentTime);
                 this.lastPosition = this.currentTime;
             });
@@ -95,6 +207,10 @@ define(['core/templates'], function(Templates) {
                     this.currentTime = duration;
                     this.markPosition(duration);
                 }
+                this.telemetry.endedat = Math.floor(Date.now() / 1000);
+                this.telemetry.dropoff = Math.floor(this.currentTime || 0);
+                this.dirty = true;
+                this.flush(true);
             });
 
             const interval = Math.max(MIN_SAVE_INTERVAL, Number(this.config.saveinterval || MIN_SAVE_INTERVAL));
@@ -205,6 +321,21 @@ define(['core/templates'], function(Templates) {
             data.append('currenttime', String(Math.max(0, Math.floor(this.currentTime || 0))));
             data.append('duration', String(Math.max(0, Math.floor(this.duration || 0))));
             data.append('buckets', JSON.stringify(snapshot));
+            if (this.telemetry && this.telemetry.level !== 'off') {
+                const rates = {};
+                Object.entries(this.telemetry.rates || {}).forEach(([rate, seconds]) => {
+                    rates[rate] = Math.floor(Number(seconds) || 0);
+                });
+                const payload = Object.assign({}, this.telemetry, {
+                    duration: Math.floor(this.duration || 0),
+                    watchtime: Math.floor(this.telemetry.watchtime || 0),
+                    dropoff: Math.floor(this.currentTime || 0),
+                    maxposition: Math.floor(this.telemetry.maxposition || 0),
+                    speedavg: Number(this.telemetry.speedavg || 1),
+                    rates: rates,
+                });
+                data.append('telemetry', JSON.stringify(payload));
+            }
             return data;
         }
 
