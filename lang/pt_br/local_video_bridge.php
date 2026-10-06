@@ -102,3 +102,13 @@ $string['subplugintype_videoprogresssource_plural'] = 'Fontes de vídeo';
 $string['eventanalyticsupdated'] = 'Analytics de vídeo atualizados';
 
 $string['privacy:metadata:session:events'] = 'Eventos compactos e ordenados de reprodução registrados para a sessão.';
+
+$string['privacy:metadata:session:sessionduration'] = 'Duração real da sessão de reprodução.';
+$string['privacy:metadata:session:pausedtime'] = 'Tempo pausado observado durante a sessão.';
+$string['privacy:metadata:session:startposition'] = 'Posição do vídeo em que a sessão começou.';
+$string['privacy:metadata:session:endposition'] = 'Última posição do vídeo observada na sessão.';
+$string['privacy:metadata:session:percentstart'] = 'Percentual autoritativo assistido no início da sessão.';
+$string['privacy:metadata:session:percentend'] = 'Percentual autoritativo assistido no fim da sessão.';
+$string['privacy:metadata:session:ratechanges'] = 'Quantidade de mudanças de velocidade observadas.';
+$string['privacy:metadata:session:receivedended'] = 'Se o player emitiu o evento ended.';
+$string['privacy:metadata:session:endreason'] = 'Motivo descritivo normalizado do encerramento da sessão.';
