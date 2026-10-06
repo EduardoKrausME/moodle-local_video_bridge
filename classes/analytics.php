@@ -263,7 +263,17 @@ class analytics {
             $where[] = 'startedat <= :todate';
             $params['todate'] = (int)$filters['to'];
         }
-        if (!empty($filters['modifiedfrom'])) {
+        $modifiedcursor = false;
+        if (array_key_exists('modifiedafter', $filters)) {
+            $where[] = '(timemodified > :modifiedafternewer OR ' .
+                '(timemodified = :modifiedaftersame AND id > :modifiedafterid))';
+            $params['modifiedafternewer'] = max(0, (int)$filters['modifiedafter']);
+            $params['modifiedaftersame'] = max(0, (int)$filters['modifiedafter']);
+            $params['modifiedafterid'] = max(0, (int)($filters['modifiedafterid'] ?? 0));
+            $modifiedcursor = true;
+        } else if (!empty($filters['modifiedfrom'])) {
+            // Kept for compatibility with existing consumers. New incremental
+            // consumers should use modifiedafter + modifiedafterid.
             $where[] = 'timemodified >= :modifiedfrom';
             $params['modifiedfrom'] = (int)$filters['modifiedfrom'];
         }
@@ -282,12 +292,25 @@ class analytics {
             $params += $inparams;
         }
 
-        return array_values($DB->get_records_select(
+        $limit = max(0, min(5000, (int)($filters['limit'] ?? 0)));
+        $sort = $modifiedcursor ? 'timemodified ASC, id ASC' : 'startedat ASC, id ASC';
+        $records = array_values($DB->get_records_select(
             'local_video_bridge_session',
             implode(' AND ', $where),
             $params,
-            'startedat ASC, id ASC'
+            $sort,
+            '*',
+            0,
+            $limit
         ));
+
+        // Expose an explicit normalized end signal so consumers do not need
+        // to understand the compact event JSON or guess from maxposition.
+        foreach ($records as $record) {
+            $events = json_decode((string)($record->events ?? ''), true) ?: [];
+            $record->reachedend = self::events_have_type($events, 'ended') ? 1 : 0;
+        }
+        return $records;
     }
 
     /**
@@ -348,11 +371,28 @@ class analytics {
                 }
             }
 
-            $buckets[self::position_to_bucket(0, $duration, $bucketcount)]['plays'] += (int)$session->plays;
+            $events = json_decode((string)($session->events ?? ''), true) ?: [];
+            $playpoints = [];
+            foreach ($events as $event) {
+                if (is_array($event) && ($event['type'] ?? '') === 'play') {
+                    $playpoints[] = (float)($event['position'] ?? 0);
+                }
+            }
+            if ($playpoints) {
+                self::add_points($buckets, $playpoints, 'plays', $duration, $bucketcount);
+            } else {
+                // BASIC and older DETAILED sessions do not contain ordered
+                // play events, so retain the historical aggregate fallback.
+                $buckets[self::position_to_bucket(0, $duration, $bucketcount)]['plays'] += (int)$session->plays;
+            }
+
             self::add_points($buckets, json_decode((string)$session->pausepoints, true) ?: [], 'pauses', $duration, $bucketcount);
             self::add_range_events($buckets, json_decode((string)$session->skippoints, true) ?: [], 'skips', $duration, $bucketcount);
             self::add_range_events($buckets, json_decode((string)$session->replaypoints, true) ?: [], 'replays', $duration, $bucketcount);
-            if ((int)$session->endedat > 0) {
+
+            // A natural ended event is completion, not abandonment. Count only
+            // sessions that were closed without the normalized ended signal.
+            if ((int)$session->endedat > 0 && empty($session->reachedend)) {
                 $dropoff = max(0, min($duration, (int)$session->dropoff));
                 $buckets[self::position_to_bucket($dropoff, $duration, $bucketcount)]['dropoffs']++;
             }
@@ -367,6 +407,18 @@ class analytics {
             'viewers' => count($viewers),
             'buckets' => array_values($buckets),
         ];
+    }
+
+    /**
+     * Checks for one normalized event type without exposing event storage to consumers.
+     */
+    private static function events_have_type(array $events, string $type): bool {
+        foreach ($events as $event) {
+            if (is_array($event) && ($event['type'] ?? '') === $type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static function add_points(array &$buckets, array $points, string $field, int $duration, int $bucketcount): void {
