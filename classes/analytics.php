@@ -142,7 +142,7 @@ class analytics {
         );
 
         $serverstarted = $record
-            ? max((int)$record->timecreated, min($now, (int)$record->startedat))
+            ? max(0, min($now, (int)$record->startedat))
             : max(0, $now - min(
                 86400,
                 $watchtime + (int)ceil(array_sum($inactivitygaps)) + 5
