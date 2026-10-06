@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/video_bridge/db" VERSION="20261006" COMMENT="XMLDB file for Video Bridge."
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+    <TABLES>
+        <TABLE NAME="local_video_bridge_progress" COMMENT="Consolidated per-user video viewing progress.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="component" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="source" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mediahash" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="currenttime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="percent" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="map" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="context_fk" TYPE="foreign" FIELDS="contextid" REFTABLE="context" REFFIELDS="id"/>
+                <KEY NAME="user_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="usage_user" UNIQUE="true"
+                       FIELDS="contextid, component, itemid, mediahash, userid"/>
+                <INDEX NAME="contextid" UNIQUE="false" FIELDS="contextid"/>
+                <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+                <INDEX NAME="component_item" UNIQUE="false" FIELDS="component, itemid"/>
+            </INDEXES>
+        </TABLE>
+    </TABLES>
+</XMLDB>
