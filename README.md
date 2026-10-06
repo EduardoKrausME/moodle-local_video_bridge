@@ -149,3 +149,16 @@ timeline.seekTo(42);
 ```
 
 For reports, `local_video_bridge\\progress\\manager::media_hash()` and `get_activity_progress()` expose the same normalized progress identity and aggregate records without consumers coupling themselves to the bridge table schema.
+
+
+## Progress thresholds and consumer events
+
+Consumer activities can read authoritative progress in batches with `local_video_bridge\progress\manager::get_progress_batch()` and obtain latest session timestamps with `get_latest_session_times()`. Consumers that need to react to a meaningful percentage can register one threshold with `set_threshold()` or query it directly with `has_reached()`.
+
+Video Bridge emits public Moodle events after authoritative server-side progress changes:
+
+- `local_video_bridge\event\progress_updated` when the stored percentage changes;
+- `local_video_bridge\event\progress_threshold_reached` only when a registered threshold is crossed;
+- `local_video_bridge\event\video_completed` when progress first reaches 100%.
+
+Threshold registration contains only consumer identifiers, media hash and percentage. Operational policies such as reminders, deadlines or compliance remain the responsibility of consumer plugins.
