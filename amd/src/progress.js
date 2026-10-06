@@ -82,6 +82,7 @@ define(['core/templates'], function(Templates) {
             this.pageHideHandler = () => {
                 this.stopContinuous(this.currentTime);
                 this.telemetry.endedat = Math.floor(Date.now() / 1000);
+                this.dirty = true;
                 this.flush(true);
             };
 
