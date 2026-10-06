@@ -113,6 +113,9 @@ class analytics {
             ? self::normalise_gaps($payload['inactivitygaps'] ?? [])
             : [];
         $rates = self::normalise_rates($payload['rates'] ?? []);
+        $events = $level === self::LEVEL_DETAILED
+            ? self::normalise_events($payload['events'] ?? [])
+            : [];
 
         // Detailed telemetry is client-observed evidence, not an authoritative
         // completion decision. Anchor time to server persistence and bound the
@@ -167,6 +170,7 @@ class analytics {
             'rates' => json_encode($rates, JSON_THROW_ON_ERROR),
             'continuousblocks' => json_encode($continuousblocks, JSON_THROW_ON_ERROR),
             'inactivitygaps' => json_encode($inactivitygaps, JSON_THROW_ON_ERROR),
+            'events' => json_encode($events, JSON_THROW_ON_ERROR),
             'timemodified' => $now,
         ];
 
@@ -448,6 +452,42 @@ class analytics {
         $clean = [];
         foreach (array_slice($points, 0, 1000) as $point) {
             $clean[] = round(max(0, min(604800, (float)$point)), 2);
+        }
+        return $clean;
+    }
+
+    private static function normalise_events($events): array {
+        if (!is_array($events)) {
+            return [];
+        }
+        $allowed = ['sessionstart','play','pause','seek','playbackrate','waiting','playing','ended','visibilitychange','sessionend'];
+        $clean = [];
+        foreach (array_slice($events, 0, 500) as $event) {
+            if (!is_array($event)) {
+                continue;
+            }
+            $type = clean_param((string)($event['type'] ?? ''), PARAM_ALPHANUMEXT);
+            if (!in_array($type, $allowed, true)) {
+                continue;
+            }
+            $item = [
+                'type' => $type,
+                'position' => round(max(0, min(604800, (float)($event['position'] ?? 0))), 2),
+            ];
+            if ($type === 'seek') {
+                $from = max(0, min(604800, (float)($event['from'] ?? 0)));
+                $to = max(0, min(604800, (float)($event['to'] ?? 0)));
+                $item['from'] = round($from, 2);
+                $item['to'] = round($to, 2);
+                $item['distance'] = round(abs($to - $from), 2);
+                $item['direction'] = $to >= $from ? 'forward' : 'backward';
+            } else if ($type === 'playbackrate') {
+                $item['from'] = max(0.1, min(16.0, (float)($event['from'] ?? 1)));
+                $item['to'] = max(0.1, min(16.0, (float)($event['to'] ?? 1)));
+            } else if ($type === 'visibilitychange') {
+                $item['state'] = (($event['state'] ?? '') === 'hidden') ? 'hidden' : 'visible';
+            }
+            $clean[] = $item;
         }
         return $clean;
     }
