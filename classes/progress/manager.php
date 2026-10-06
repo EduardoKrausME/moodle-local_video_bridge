@@ -274,6 +274,32 @@ class manager {
     }
 
     /**
+     * Deletes bridge-owned progress and session telemetry for one consumer.
+     *
+     * Consumer plugins should call this instead of deleting Video Bridge tables directly.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer activity instance id.
+     * @return void
+     */
+    public static function delete_consumer(
+        int $contextid,
+        string $component,
+        int $itemid
+    ): void {
+        global $DB;
+
+        $params = [
+            'contextid' => $contextid,
+            'component' => clean_param($component, PARAM_COMPONENT),
+            'itemid' => $itemid,
+        ];
+        $DB->delete_records('local_video_bridge_progress', $params);
+        $DB->delete_records('local_video_bridge_session', $params);
+    }
+
+    /**
      * Merges a batch of watched buckets and recalculates authoritative progress.
      *
      * @param int $contextid Context id.
