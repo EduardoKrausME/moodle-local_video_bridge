@@ -21,3 +21,40 @@
     height: 100%;
     border: 0;
 }
+
+
+.video-bridge-progress {
+    margin-top: 8px;
+}
+
+.video-bridge-progress__map {
+    display: flex;
+    width: 100%;
+    min-height: 14px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(127, 127, 127, 0.18);
+}
+
+.video-bridge-progress__bucket {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 14px;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.video-bridge-progress__bucket.is-watched {
+    background: var(--primary, #0f6cbf);
+}
+
+.video-bridge-progress__bucket:hover {
+    background: rgba(15, 108, 191, 0.35);
+}
+
+.video-bridge-progress__label {
+    margin-top: 4px;
+    font-size: 0.82rem;
+    text-align: center;
+}
