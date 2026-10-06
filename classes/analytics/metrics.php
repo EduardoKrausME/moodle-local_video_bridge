@@ -92,6 +92,62 @@ final class metrics {
     public array $inactivitygaps = [];
 
     /**
+     * Provides read-only compatibility aliases for the original camelCase properties.
+     *
+     * @param string $name Legacy property name.
+     * @return mixed Property value.
+     * @throws \coding_exception For unknown properties.
+     */
+    public function __get(string $name): mixed {
+        return match ($name) {
+            'uniqueWatchTime' => $this->uniquewatchtime,
+            'playbackTime' => $this->playbacktime,
+            'sessionTime' => $this->sessiontime,
+            'pauseCount' => $this->pausecount,
+            'seekCount' => $this->seekcount,
+            'replayCount' => $this->replaycount,
+            'maxRate' => $this->maxrate,
+            'averageRate' => $this->averagerate,
+            'reachedEnd' => $this->reachedend,
+            'watchedRanges' => $this->watchedranges,
+            'lastPosition' => $this->lastposition,
+            'seeksForward' => $this->seeksforward,
+            'seeksBackward' => $this->seeksbackward,
+            'largestForwardSeek' => $this->largestforwardseek,
+            'continuousBlocks' => $this->continuousblocks,
+            'inactivityGaps' => $this->inactivitygaps,
+            default => throw new \coding_exception('Unknown Video Bridge metrics property: ' . $name),
+        };
+    }
+
+    /**
+     * Reports whether a legacy camelCase compatibility property exists.
+     *
+     * @param string $name Legacy property name.
+     * @return bool
+     */
+    public function __isset(string $name): bool {
+        return in_array($name, [
+            'uniqueWatchTime',
+            'playbackTime',
+            'sessionTime',
+            'pauseCount',
+            'seekCount',
+            'replayCount',
+            'maxRate',
+            'averageRate',
+            'reachedEnd',
+            'watchedRanges',
+            'lastPosition',
+            'seeksForward',
+            'seeksBackward',
+            'largestForwardSeek',
+            'continuousBlocks',
+            'inactivityGaps',
+        ], true);
+    }
+
+    /**
      * Builds metrics from provider-independent analytics facts.
      *
      * @param array $facts Normalized analytics facts.
