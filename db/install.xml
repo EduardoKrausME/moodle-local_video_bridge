@@ -72,6 +72,10 @@
             <INDEXES>
                 <INDEX NAME="session_unique" UNIQUE="true" FIELDS="contextid, component, itemid, mediahash, userid, sessionid"/>
                 <INDEX NAME="component_item_media" UNIQUE="false" FIELDS="component, itemid, mediahash"/>
+                <INDEX NAME="consumer_user" UNIQUE="false" FIELDS="component, itemid, userid"/>
+                <INDEX NAME="consumer_time" UNIQUE="false" FIELDS="component, itemid, timecreated"/>
+                <INDEX NAME="user_session" UNIQUE="false" FIELDS="userid, sessionid"/>
+                <INDEX NAME="mediahash_idx" UNIQUE="false" FIELDS="mediahash"/>
                 <INDEX NAME="modified" UNIQUE="false" FIELDS="timemodified"/>
             </INDEXES>
         </TABLE>
