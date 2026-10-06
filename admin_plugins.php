@@ -35,6 +35,10 @@ $types = [
         'title' => 'subplugintype_videocaptionsource_plural',
         'description' => 'captionsources_desc',
     ],
+    'videocaptiontool' => [
+        'title' => 'subplugintype_videocaptiontool_plural',
+        'description' => 'captiontools_desc',
+    ],
 ];
 
 if (!isset($types[$type])) {

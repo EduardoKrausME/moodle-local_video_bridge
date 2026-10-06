@@ -1,10 +1,12 @@
 {
   "subplugintypes": {
     "videoprogresssource": "source",
-    "videocaptionsource": "caption"
+    "videocaptionsource": "caption",
+    "videocaptiontool": "captiontool"
   },
   "plugintypes": {
     "videoprogresssource": "local/video_bridge/source",
-    "videocaptionsource": "local/video_bridge/caption"
+    "videocaptionsource": "local/video_bridge/caption",
+    "videocaptiontool": "local/video_bridge/captiontool"
   }
 }

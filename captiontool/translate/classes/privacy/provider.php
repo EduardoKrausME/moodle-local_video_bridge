@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Privacy provider.
  *
- * @package   local_video_bridge
+ * @package   videocaptiontool_translate
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+namespace videocaptiontool_translate\privacy;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100512;
-$plugin->release = '1.3.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+class provider implements \core_privacy\local\metadata\null_provider {
+    public static function get_reason(): string {
+        return 'privacy:metadata';
+    }
+}

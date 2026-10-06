@@ -15,17 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Version metadata.
  *
- * @package   local_video_bridge
+ * @package   videocaptiontool_analyze
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100512;
-$plugin->release = '1.3.0';
-$plugin->requires = 2024042200;
+$plugin->component = 'videocaptiontool_analyze';
+$plugin->version = 2026100500;
+$plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
+$plugin->release = '1.0.0';
+$plugin->dependencies = [
+    'local_video_bridge' => 2026100512,
+    'local_ai_bridge' => 2026093001,
+];

@@ -15,17 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Settings for videocaptiontool_generate.
  *
- * @package   local_video_bridge
+ * @package   videocaptiontool_generate
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100512;
-$plugin->release = '1.3.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$settings->add(new admin_setting_configtext(
+    'videocaptiontool_generate/purposeidnumber',
+    get_string('purposeidnumber', 'videocaptiontool_generate'),
+    get_string('purposeidnumber_desc', 'videocaptiontool_generate'),
+    'video-caption-generate',
+    PARAM_RAW_TRIMMED
+));

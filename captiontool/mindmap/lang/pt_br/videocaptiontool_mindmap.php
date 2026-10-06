@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Strings de idioma.
  *
- * @package   local_video_bridge
+ * @package   videocaptiontool_mindmap
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100512;
-$plugin->release = '1.3.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+$string['description'] = 'Cria um mapa mental Mermaid a partir do conteúdo da legenda WebVTT usando o AI Bridge.';
+$string['pluginname'] = 'Criar mapa mental da legenda';
+$string['privacy:metadata'] = 'Esta ferramenta não armazena o conteúdo da legenda nem a resposta da IA. O AI Bridge registra seus próprios metadados de uso.';
+$string['purposeidnumber'] = 'Purpose do AI Bridge';
+$string['purposeidnumber_desc'] = 'Idnumber do purpose usado pelo local_ai_bridge para geração de mapa mental.';

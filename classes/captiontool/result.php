@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version metadata for Video Bridge.
+ * Result returned by a caption tool.
  *
  * @package   local_video_bridge
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+namespace local_video_bridge\captiontool;
 
-$plugin->component = 'local_video_bridge';
-$plugin->version = 2026100512;
-$plugin->release = '1.3.0';
-$plugin->requires = 2024042200;
-$plugin->maturity = MATURITY_STABLE;
+/**
+ * Immutable caption tool result.
+ */
+class result {
+    public function __construct(
+        public readonly string $content,
+        public readonly string $format,
+        public readonly array $metadata = [],
+    ) {
+    }
+}

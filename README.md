@@ -44,3 +44,13 @@ HLS and Vimeo runtime libraries are shipped by Video Bridge, so a consumer never
 
 
 Caption consumers use `local_video_bridge\caption\manager`. By default it expects `captionsource` and `captionconfig`, but consumers may map those aliases to their own schema. Caption providers return browser-ready tracks with `url`, `language`, `label` and `isdefault`.
+
+
+AI caption operations are extensible through the `videocaptiontool` subplugin type. The bundled tools use `local_ai_bridge` rather than calling AI vendors directly:
+
+- `videocaptiontool_generate` converts transcript text into reviewable WebVTT;
+- `videocaptiontool_translate` translates WebVTT while preserving cue timings;
+- `videocaptiontool_analyze` reviews caption quality, language and accessibility;
+- `videocaptiontool_mindmap` turns caption content into a Mermaid mind map.
+
+Each tool has its own configurable AI Bridge purpose idnumber, so tenants may route each operation to different providers, models, roles, limits and credit costs.
