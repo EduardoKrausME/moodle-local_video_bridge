@@ -88,6 +88,7 @@ class provider implements
             'rates' => 'privacy:metadata:session:rates',
             'continuousblocks' => 'privacy:metadata:session:continuousblocks',
             'inactivitygaps' => 'privacy:metadata:session:inactivitygaps',
+            'events' => 'privacy:metadata:session:events',
             'timecreated' => 'privacy:metadata:session:timecreated',
             'timemodified' => 'privacy:metadata:session:timemodified',
         ], 'privacy:metadata:session');
@@ -191,6 +192,7 @@ class provider implements
                         'rates' => json_decode($session->rates, true) ?: [],
                         'continuousblocks' => json_decode((string)($session->continuousblocks ?? ''), true) ?: [],
                         'inactivitygaps' => json_decode((string)($session->inactivitygaps ?? ''), true) ?: [],
+                        'events' => json_decode((string)($session->events ?? ''), true) ?: [],
                         'timecreated' => transform::datetime($session->timecreated),
                         'timemodified' => transform::datetime($session->timemodified),
                     ];
