@@ -146,6 +146,36 @@ class manager {
         return $facts;
     }
 
+
+    /**
+     * Returns the stable object contract shared by score/reporting consumers.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Consumer instance id.
+     * @param string $mediahash Video Bridge media hash.
+     * @param int $userid Learner id.
+     * @param array $filters Optional session filters.
+     * @return metrics
+     */
+    public static function get_user_metrics(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $mediahash,
+        int $userid,
+        array $filters = []
+    ): metrics {
+        return metrics::from_facts(self::get_facts(
+            $contextid,
+            $component,
+            $itemid,
+            $mediahash,
+            $userid,
+            $filters
+        ));
+    }
+
     /**
      * Normalizes one compact session into facts useful to consumers.
      *
