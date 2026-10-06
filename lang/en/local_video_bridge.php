@@ -92,3 +92,5 @@ $string['subplugintype_videocaptiontool_plural'] = 'Caption tools';
 $string['subplugintype_videoprogresssource'] = 'Video source';
 $string['subplugintype_videoprogresssource_plural'] = 'Video sources';
 $string['unknown'] = 'Not provided';
+
+$string['eventanalyticsupdated'] = 'Video analytics updated';

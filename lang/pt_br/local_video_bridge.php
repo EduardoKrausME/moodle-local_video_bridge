@@ -80,3 +80,5 @@ $string['subplugintype_videocaptiontool'] = 'Ferramenta de legenda';
 $string['subplugintype_videocaptiontool_plural'] = 'Ferramentas de legenda';
 $string['subplugintype_videoprogresssource'] = 'Fonte de vídeo';
 $string['subplugintype_videoprogresssource_plural'] = 'Fontes de vídeo';
+
+$string['eventanalyticsupdated'] = 'Analytics de vídeo atualizados';

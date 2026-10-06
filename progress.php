@@ -99,6 +99,21 @@ try {
         );
     }
 
+
+    $event = \local_video_bridge\event\analytics_updated::create([
+        'objectid' => (int)$progress->id,
+        'context' => $context,
+        'relateduserid' => (int)$USER->id,
+        'other' => [
+            'component' => $component,
+            'itemid' => $itemid,
+            'source' => $source,
+            'mediahash' => $mediahash,
+            'percent' => (int)$progress->percent,
+        ],
+    ]);
+    $event->trigger();
+
     echo json_encode([
         'success' => true,
         'currenttime' => (int)$progress->currenttime,
