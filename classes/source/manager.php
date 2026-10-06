@@ -30,6 +30,9 @@ use core_collator;
 use core_component;
 use moodle_exception;
 use moodle_url;
+use local_video_bridge\caption\manager as caption_manager;
+use local_video_bridge\media\config as media_config;
+use local_video_bridge\progress\consumer;
 use local_video_bridge\progress\manager as progress_manager;
 use MoodleQuickForm;
 use stdClass;
@@ -273,6 +276,72 @@ class manager {
     }
 
     /**
+     * Prepares provider fields for one item in a multi-media consumer.
+     *
+     * @param array $defaultvalues Form values.
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @return void
+     */
+    public function prepare_form_data_for_media(
+        array &$defaultvalues,
+        context_module $context,
+        int $mediaid
+    ): void {
+        $source = clean_param((string)($defaultvalues[$this->sourcefield] ?? ''), PARAM_PLUGIN);
+        if ($source === '') {
+            return;
+        }
+
+        $working = $defaultvalues;
+        $working['videosource'] = $source;
+        $working['sourceconfig'] = $defaultvalues[$this->configfield] ?? '';
+        $working['videourl'] = $this->legacyfield === null
+            ? ($defaultvalues['videourl'] ?? '')
+            : ($defaultvalues[$this->legacyfield] ?? ($defaultvalues['videourl'] ?? ''));
+
+        $this->get_plugin($source)->prepare_media_form_data($working, $context, $mediaid);
+        $defaultvalues = array_replace($defaultvalues, $working);
+    }
+
+    /**
+     * Saves provider files for one item in a multi-media consumer.
+     *
+     * @param stdClass $data Form data.
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @param string|null $previoussource Previous provider short name.
+     * @return void
+     */
+    public function save_files_for_media(
+        stdClass $data,
+        context_module $context,
+        int $mediaid,
+        ?string $previoussource = null
+    ): void {
+        $source = clean_param((string)($data->{$this->sourcefield} ?? ''), PARAM_PLUGIN);
+        $plugins = $this->get_plugins();
+
+        if ($previoussource && $previoussource !== $source && isset($plugins[$previoussource])) {
+            $plugins[$previoussource]->delete_media_files($context, $mediaid);
+        }
+        $this->get_plugin($source)->save_media_files($data, $context, $mediaid);
+    }
+
+    /**
+     * Deletes provider files for one media item.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @return void
+     */
+    public function delete_files_for_media(context_module $context, int $mediaid): void {
+        foreach ($this->get_plugins() as $plugin) {
+            $plugin->delete_media_files($context, $mediaid);
+        }
+    }
+
+    /**
      * Deletes source-owned files for an activity context.
      *
      * @param context_module $context Activity module context.
@@ -354,6 +423,71 @@ class manager {
     }
 
     /**
+     * Builds browser-safe player data for one item in a multi-media consumer.
+     *
+     * @param media_config $media Media configuration.
+     * @param context_module $context Module context.
+     * @param consumer|null $consumer Explicit progress consumer identity.
+     * @param string $telemetrylevel Telemetry level requested by the consumer.
+     * @param array $requiredcapabilities Capabilities required by the consumer.
+     * @return array Player configuration.
+     */
+    public function get_player_config_for_media(
+        media_config $media,
+        context_module $context,
+        ?consumer $consumer = null,
+        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC,
+        array $requiredcapabilities = []
+    ): array {
+        $source = $media->get_source();
+        $plugin = $this->get_plugin($source);
+
+        foreach ($requiredcapabilities as $capability) {
+            if (!$plugin->supports((string)$capability)) {
+                throw new coding_exception(
+                    'Video source ' . $source . ' does not provide required capability: ' . $capability
+                );
+            }
+        }
+
+        $config = $plugin->get_player_config_for_media($media, $context);
+        if (array_key_exists('hlsjsurl', $config)) {
+            $config['hlsjsurl'] = (new moodle_url('/local/video_bridge/vendor/hls/hls.min.js'))->out(false);
+        }
+        if (array_key_exists('vimeoplayerurl', $config)) {
+            $config['vimeoplayerurl'] =
+                (new moodle_url('/local/video_bridge/vendor/vimeo/player.min.js'))->out(false);
+        }
+
+        if ($media->get_posterurl() !== '' && $plugin->supports_poster()) {
+            $config['poster'] = $media->get_posterurl();
+        }
+        if ($media->get_captionsource() !== '' && $plugin->supports_uploaded_captions()) {
+            $config['captions'] = (new caption_manager())->get_tracks_for_media($media, $context);
+        }
+
+        $playerconfig = $config + [
+            'source' => $source,
+            'mediaid' => $media->get_mediaid(),
+            'mediahash' => $media->get_mediahash(),
+            'capabilities' => $plugin->get_capabilities(),
+            'adaptermodule' => $plugin->get_amd_module(),
+            'sourcetemplate' => $plugin->get_player_template(),
+        ];
+
+        if ($plugin->supports('tracking')) {
+            $playerconfig['progress'] = progress_manager::build_config_for_media(
+                $context,
+                $consumer ?? consumer::from_context($context),
+                $media,
+                $telemetrylevel
+            );
+        }
+
+        return $playerconfig;
+    }
+
+    /**
      * Returns a provider-owned media file suitable for transcription.
      *
      * @param stdClass $activity Consumer activity record.
@@ -363,6 +497,23 @@ class manager {
     public function get_transcription_file(stdClass $activity, context_module $context): ?stored_file {
         $record = $this->provider_record($activity);
         return $this->get_plugin((string)$record->videosource)->get_transcription_file($context);
+    }
+
+    /**
+     * Returns a provider-owned file for one media item.
+     *
+     * @param media_config $media Media configuration.
+     * @param context_module $context Module context.
+     * @return stored_file|null
+     */
+    public function get_transcription_file_for_media(
+        media_config $media,
+        context_module $context
+    ): ?stored_file {
+        return $this->get_plugin($media->get_source())->get_transcription_file_for_media(
+            $context,
+            $media->get_mediaid()
+        );
     }
 
     /**
