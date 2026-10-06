@@ -26,6 +26,7 @@ namespace local_video_bridge\source;
 
 use coding_exception;
 use context_module;
+use local_video_bridge\media\config as media_config;
 use moodle_url;
 use MoodleQuickForm;
 use stdClass;
@@ -163,6 +164,73 @@ abstract class plugin_base {
      * @return void
      */
     public function delete_files(context_module $context): void {
+    }
+
+    /**
+     * Prepares stored values for one item in a multi-media consumer.
+     *
+     * Providers that own per-media files should override this method and use
+     * $mediaid as their File API itemid.
+     *
+     * @param array $defaultvalues Form values.
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @return void
+     */
+    public function prepare_media_form_data(
+        array &$defaultvalues,
+        context_module $context,
+        int $mediaid
+    ): void {
+        $this->prepare_form_data($defaultvalues, $context);
+    }
+
+    /**
+     * Persists source-owned files for one item in a multi-media consumer.
+     *
+     * @param stdClass $data Saved form data.
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @return void
+     */
+    public function save_media_files(stdClass $data, context_module $context, int $mediaid): void {
+        $this->save_files($data, $context);
+    }
+
+    /**
+     * Deletes source-owned files for one item in a multi-media consumer.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @return void
+     */
+    public function delete_media_files(context_module $context, int $mediaid): void {
+        $this->delete_files($context);
+    }
+
+    /**
+     * Returns browser-safe player data for one item in a multi-media consumer.
+     *
+     * @param media_config $media Media configuration.
+     * @param context_module $context Module context.
+     * @return array Player configuration.
+     */
+    public function get_player_config_for_media(media_config $media, context_module $context): array {
+        return $this->get_player_config($media->to_source_record(), $context);
+    }
+
+    /**
+     * Returns a server-readable file for one item in a multi-media consumer.
+     *
+     * @param context_module $context Module context.
+     * @param int $mediaid Stable media item id.
+     * @return stored_file|null
+     */
+    public function get_transcription_file_for_media(
+        context_module $context,
+        int $mediaid
+    ): stored_file|null {
+        return $this->get_transcription_file($context);
     }
 
     /**
