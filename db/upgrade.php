@@ -247,5 +247,24 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026100606, 'local', 'video_bridge');
     }
 
+    if ($oldversion < 2026100610) {
+        $dbman = $DB->get_manager();
+        $table = new xmldb_table('local_video_bridge_session');
+        $field = new xmldb_field(
+            'events',
+            XMLDB_TYPE_TEXT,
+            null,
+            null,
+            null,
+            null,
+            null,
+            'inactivitygaps'
+        );
+        if ($dbman->table_exists($table) && !$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026100610, 'local', 'video_bridge');
+    }
+
     return true;
 }
