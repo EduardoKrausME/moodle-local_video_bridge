@@ -96,5 +96,54 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2026100600, 'local', 'video_bridge');
     }
 
+
+    if ($oldversion < 2026100601) {
+        $dbman = $DB->get_manager();
+        $table = new xmldb_table('local_video_bridge_session');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('component', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL);
+        $table->add_field('itemid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('source', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL);
+        $table->add_field('mediahash', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('sessionid', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL);
+        $table->add_field('level', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'basic');
+        $table->add_field('startedat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('endedat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('duration', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('watchtime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('plays', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('pauses', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('seeks', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('replays', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('skips', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('dropoff', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('maxposition', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('speedavg', XMLDB_TYPE_NUMBER, '10,4', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('ranges', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+        $table->add_field('pausepoints', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+        $table->add_field('skippoints', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+        $table->add_field('replaypoints', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+        $table->add_field('rates', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('context_fk', XMLDB_KEY_FOREIGN, ['contextid'], 'context', ['id']);
+        $table->add_key('user_fk', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $table->add_index('session_unique', XMLDB_INDEX_UNIQUE,
+            ['contextid', 'component', 'itemid', 'mediahash', 'userid', 'sessionid']);
+        $table->add_index('component_item_media', XMLDB_INDEX_NOTUNIQUE, ['component', 'itemid', 'mediahash']);
+        $table->add_index('modified', XMLDB_INDEX_NOTUNIQUE, ['timemodified']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026100601, 'local', 'video_bridge');
+    }
+
     return true;
 }
