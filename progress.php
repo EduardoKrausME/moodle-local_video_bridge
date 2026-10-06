@@ -124,6 +124,7 @@ try {
         ],
     ]);
     $event->trigger();
+    manager::trigger_progress_events($context, $progress, $previouspercent);
 
     echo json_encode([
         'success' => true,
