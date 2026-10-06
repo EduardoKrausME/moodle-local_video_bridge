@@ -30,5 +30,47 @@
                 <INDEX NAME="component_item" UNIQUE="false" FIELDS="component, itemid"/>
             </INDEXES>
         </TABLE>
+        <TABLE NAME="local_video_bridge_session" COMMENT="Compact per-session video analytics telemetry.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="component" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="source" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="mediahash" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="sessionid" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="level" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="basic" SEQUENCE="false"/>
+                <FIELD NAME="startedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="endedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="watchtime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="plays" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="pauses" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="seeks" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="replays" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="skips" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="dropoff" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="maxposition" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="speedavg" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" DECIMALS="4"/>
+                <FIELD NAME="ranges" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="pausepoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="skippoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="replaypoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="rates" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="context_fk" TYPE="foreign" FIELDS="contextid" REFTABLE="context" REFFIELDS="id"/>
+                <KEY NAME="user_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="session_unique" UNIQUE="true" FIELDS="contextid, component, itemid, mediahash, userid, sessionid"/>
+                <INDEX NAME="component_item_media" UNIQUE="false" FIELDS="component, itemid, mediahash"/>
+                <INDEX NAME="modified" UNIQUE="false" FIELDS="timemodified"/>
+            </INDEXES>
+        </TABLE>
     </TABLES>
 </XMLDB>
