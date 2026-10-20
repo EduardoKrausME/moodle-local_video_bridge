@@ -33,18 +33,33 @@ use local_video_bridge\progress\manager;
  * @covers \local_video_bridge\progress\manager
  */
 final class progress_manager_test extends advanced_testcase {
+    /**
+     * Method test_short_video_uses_one_bucket_per_second.
+     *
+     * @return void Return value.
+     */
     public function test_short_video_uses_one_bucket_per_second(): void {
         $this->assertSame(40, manager::progress_length(40));
         $this->assertSame(1, manager::bucket_for_position(1, 40));
         $this->assertSame(40, manager::bucket_for_position(40, 40));
     }
 
+    /**
+     * Method test_long_video_uses_one_hundred_buckets.
+     *
+     * @return void Return value.
+     */
     public function test_long_video_uses_one_hundred_buckets(): void {
         $this->assertSame(100, manager::progress_length(824));
         $this->assertSame(50, manager::bucket_for_position(412, 824));
         $this->assertSame(100, manager::bucket_for_position(824, 824));
     }
 
+    /**
+     * Method test_progress_batch_empty_input_returns_empty_array.
+     *
+     * @return void Return value.
+     */
     public function test_progress_batch_empty_input_returns_empty_array(): void {
         $this->resetAfterTest();
         $hash = str_repeat('a', 64);
@@ -53,6 +68,11 @@ final class progress_manager_test extends advanced_testcase {
         $this->assertSame([], manager::get_latest_session_times(1, 'mod_example', 1, $hash, []));
     }
 
+    /**
+     * Method test_invalid_duration_has_no_bucket.
+     *
+     * @return void Return value.
+     */
     public function test_invalid_duration_has_no_bucket(): void {
         $this->assertSame(0, manager::progress_length(0));
         $this->assertSame(0, manager::bucket_for_position(10, 0));
