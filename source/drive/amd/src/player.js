@@ -17,6 +17,7 @@
  * Remote player adapter.
  *
  * @module     videoprogresssource_drive/player
+ * @package   videoprogresssource_drive
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

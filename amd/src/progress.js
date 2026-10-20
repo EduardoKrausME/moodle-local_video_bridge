@@ -17,6 +17,7 @@
  * Shared in-memory viewing-map tracker.
  *
  * @module     local_video_bridge/progress
+ * @package   local_video_bridge
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

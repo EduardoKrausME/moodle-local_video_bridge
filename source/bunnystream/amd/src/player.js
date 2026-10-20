@@ -17,6 +17,7 @@
  * Bunny Stream Player.js adapter.
  *
  * @module     videoprogresssource_bunnystream/player
+ * @package   videoprogresssource_bunnystream
  * @copyright 2026 Eduardo Kraus
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
