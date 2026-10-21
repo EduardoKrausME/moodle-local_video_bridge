@@ -32,27 +32,33 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
     global $DB;
 
     if ($oldversion < 2026100508) {
-        // Move uploads created while the source layer still belonged to mod_videoprogress.
-        $legacyfiles = $DB->get_records('files', [
-            'component' => 'mod_videoprogress',
-            'filearea' => 'video',
+        // Preserve the File API pathname hash when migrating from the old component.
+        $fs = get_file_storage();
+        $legacyfiles = $DB->get_records("files", [
+            "component" => "mod_videoprogress",
+            "filearea" => "video",
         ]);
 
         foreach ($legacyfiles as $legacyfile) {
-            $existing = $DB->get_record('files', [
-                'contextid' => $legacyfile->contextid,
-                'component' => 'local_video_bridge',
-                'filearea' => 'video',
-                'itemid' => $legacyfile->itemid,
-                'filepath' => $legacyfile->filepath,
-                'filename' => $legacyfile->filename,
-            ]);
-
-            if ($existing) {
-                $DB->delete_records('files', ['id' => $legacyfile->id]);
-            } else {
-                $DB->set_field('files', 'component', 'local_video_bridge', ['id' => $legacyfile->id]);
+            $storedfile = $fs->get_file_by_id($legacyfile->id);
+            if (!$storedfile) {
+                continue;
             }
+            $target = [
+                "contextid" => $legacyfile->contextid,
+                "component" => "local_video_bridge",
+                "filearea" => "video",
+                "itemid" => $legacyfile->itemid,
+                "filepath" => $legacyfile->filepath,
+                "filename" => $legacyfile->filename,
+            ];
+            if (!$fs->file_exists(
+                $target["contextid"], $target["component"], $target["filearea"],
+                $target["itemid"], $target["filepath"], $target["filename"]
+            )) {
+                $fs->create_file_from_storedfile($target, $storedfile);
+            }
+            $storedfile->delete();
         }
 
         upgrade_plugin_savepoint(true, 2026100508, 'local', 'video_bridge');
@@ -354,6 +360,54 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         }
 
         upgrade_plugin_savepoint(true, 2026100618, 'local', 'video_bridge');
+    }
+
+    if ($oldversion < 2026102000) {
+        // Earlier releases changed files.component with direct SQL and left the old
+        // pathnamehash in place. Recreate only affected File API records, including
+        // any legacy leftovers, without losing the existing file content.
+        $fs = get_file_storage();
+        $candidates = $DB->get_records("files", [
+            "component" => "local_video_bridge",
+            "filearea" => "video",
+        ]);
+
+        foreach ($candidates as $candidate) {
+            $expectedhash = \file_storage::get_pathname_hash(
+                $candidate->contextid,
+                "local_video_bridge",
+                "video",
+                $candidate->itemid,
+                $candidate->filepath,
+                $candidate->filename
+            );
+            if ($candidate->pathnamehash === $expectedhash) {
+                continue;
+            }
+
+            $oldfile = $fs->get_file_by_id($candidate->id);
+            if (!$oldfile) {
+                throw new \moodle_exception("error", "error");
+            }
+            $target = [
+                "contextid" => $candidate->contextid,
+                "component" => "local_video_bridge",
+                "filearea" => "video",
+                "itemid" => $candidate->itemid,
+                "filepath" => $candidate->filepath,
+                "filename" => $candidate->filename,
+            ];
+            if (!$fs->file_exists(
+                $target["contextid"], $target["component"], $target["filearea"],
+                $target["itemid"], $target["filepath"], $target["filename"]
+            )) {
+                $fs->create_file_from_storedfile($target, $oldfile);
+            }
+            // Delete only after the destination exists to keep this step retryable.
+            $oldfile->delete();
+        }
+
+        upgrade_plugin_savepoint(true, 2026102000, "local", "video_bridge");
     }
 
     return true;
