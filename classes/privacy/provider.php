@@ -268,10 +268,12 @@ class provider implements
     public static function get_users_in_context(userlist $userlist): void {
         $contextid = $userlist->get_context()->id;
         $userlist->add_from_sql(
+            "userid",
             "SELECT DISTINCT userid FROM {local_video_bridge_progress} WHERE contextid = :contextid",
             ["contextid" => $contextid]
         );
         $userlist->add_from_sql(
+            "userid",
             "SELECT DISTINCT userid FROM {local_video_bridge_session} WHERE contextid = :contextid",
             ["contextid" => $contextid]
         );
