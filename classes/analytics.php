@@ -117,6 +117,44 @@ class analytics {
         ];
         $record = $DB->get_record('local_video_bridge_session', $params);
 
+        if (!$record) {
+            // A browser can choose arbitrary session IDs, so limit distinct rows
+            // per user and media without preventing existing sessions from updating.
+            $scope = [
+                "contextid" => $context->id,
+                "component" => $params["component"],
+                "itemid" => $itemid,
+                "mediahash" => $mediahash,
+                "userid" => $userid,
+            ];
+            $recentcount = $DB->count_records_select(
+                "local_video_bridge_session",
+                "contextid = :contextid AND component = :component AND itemid = :itemid " .
+                    "AND mediahash = :mediahash AND userid = :userid AND timecreated >= :since",
+                $scope + ["since" => $now - 3600]
+            );
+            $totalcount = $DB->count_records("local_video_bridge_session", $scope);
+            if ($recentcount >= 60 || $totalcount >= 2000) {
+                // Reuse an existing open session if one remains; otherwise discard
+                // this telemetry batch while still allowing progress to be saved.
+                $open = $DB->get_records_select(
+                    "local_video_bridge_session",
+                    "contextid = :contextid AND component = :component AND itemid = :itemid " .
+                        "AND mediahash = :mediahash AND userid = :userid " .
+                        "AND endedat = 0 AND timecreated >= :since",
+                    $scope + ["since" => $now - 3600],
+                    "timecreated DESC, id DESC",
+                    "*",
+                    0,
+                    1
+                );
+                if (!$open) {
+                    return null;
+                }
+                $record = reset($open);
+            }
+        }
+
         $ranges = $level === self::LEVEL_DETAILED
             ? self::normalise_ranges($payload['ranges'] ?? [])
             : [];
