@@ -64,6 +64,7 @@ class manager {
         $component = 'mod_' . $cm->modname;
         $itemid = (int)$cm->instance;
         $mediahash = \local_video_bridge\analytics::media_hash($source, $sourceconfig);
+        self::register_media($context->id, $component, $itemid, $source, $mediahash);
         $progress = self::get_or_create(
             $context->id,
             $component,
@@ -116,6 +117,13 @@ class manager {
         }
 
         $mediahash = $media->get_mediahash();
+        self::register_media(
+            $context->id,
+            $consumer->get_component(),
+            $consumer->get_itemid(),
+            $media->get_source(),
+            $mediahash
+        );
         $progress = self::get_or_create(
             $context->id,
             $consumer->get_component(),
@@ -143,6 +151,77 @@ class manager {
             'label' => get_string('progressmap', 'local_video_bridge'),
             'telemetrylevel' => $telemetrylevel,
         ];
+    }
+
+    /**
+     * Registers a server-rendered media identity for the current Moodle session.
+     *
+     * This allowlist never accepts identifiers supplied by the browser. The short
+     * expiry also stops an old activity configuration from being reused indefinitely.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Activity instance id.
+     * @param string $source Source short name.
+     * @param string $mediahash Hash of the configured media.
+     * @return void
+     */
+    public static function register_media(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $source,
+        string $mediahash
+    ): void {
+        global $SESSION;
+
+        if (!isset($SESSION) || !is_object($SESSION)) {
+            throw new \coding_exception("Video Bridge requires an active Moodle session.");
+        }
+
+        if (!isset($SESSION->local_video_bridge_media) || !is_array($SESSION->local_video_bridge_media)) {
+            $SESSION->local_video_bridge_media = [];
+        }
+
+        $key = hash("sha256", $contextid . "|" . $component . "|" . $itemid . "|" . $mediahash);
+        $registered = $SESSION->local_video_bridge_media;
+        unset($registered[$key]);
+        $registered[$key] = ["source" => $source, "expires" => time() + 10800];
+        // Retain a bounded set even on course pages containing many video items.
+        while (count($registered) > 256) {
+            array_shift($registered);
+        }
+        $SESSION->local_video_bridge_media = $registered;
+    }
+
+    /**
+     * Rejects fabricated hashes and sources before writing any progress or telemetry.
+     *
+     * @param int $contextid Module context id.
+     * @param string $component Consumer component.
+     * @param int $itemid Activity instance id.
+     * @param string $source Source short name.
+     * @param string $mediahash Media identifier supplied by the browser.
+     * @return void
+     */
+    public static function assert_registered_media(
+        int $contextid,
+        string $component,
+        int $itemid,
+        string $source,
+        string $mediahash
+    ): void {
+        global $SESSION;
+
+        if (!preg_match("/^[a-f0-9]{64}$/D", $mediahash)) {
+            throw new \invalid_parameter_exception("Invalid Video Bridge media identity.");
+        }
+        $key = hash("sha256", $contextid . "|" . $component . "|" . $itemid . "|" . $mediahash);
+        $entry = $SESSION->local_video_bridge_media[$key] ?? null;
+        if (!is_array($entry) || (int)($entry["expires"] ?? 0) < time() ||
+                !hash_equals((string)($entry["source"] ?? ""), $source)) {
+            throw new \invalid_parameter_exception("Unregistered Video Bridge media identity.");
+        }
     }
 
     /**
