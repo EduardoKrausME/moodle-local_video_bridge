@@ -55,7 +55,7 @@ class plugin extends plugin_base {
             get_string('bunnyurl', 'videoprogresssource_bunnystream'),
             ['size' => 80]
         );
-        $mform->setType('bunnyurl', PARAM_TEXT);
+        $mform->setType("bunnyurl", PARAM_URL);
         $mform->addHelpButton('bunnyurl', 'bunnyurl', 'videoprogresssource_bunnystream');
         $mform->hideIf('bunnyurl', $sourcefield, 'neq', 'bunnystream');
     }
@@ -226,10 +226,35 @@ class plugin extends plugin_base {
 
         $url = 'https://iframe.mediadelivery.net/embed/' .
             rawurlencode($libraryid) . '/' . rawurlencode($videoid);
-        $query = trim((string)($config['query'] ?? ''));
-        if ($query !== '') {
-            $url .= '?' . $query;
+        $query = self::safe_query((string)($config["query"] ?? ""));
+        if ($query !== "") {
+            $url .= "?" . $query;
         }
         return $url;
     }
+    /**
+     * Accepts only recognized, scalar Bunny player options and encodes their values.
+     *
+     * @param string $query Raw query string.
+     * @return string Canonical, attribute-safe query string.
+     */
+    private static function safe_query(string $query): string {
+        parse_str($query, $parameters);
+        $allowed = [
+            "autoplay", "muted", "loop", "preload", "responsive",
+            "playsinline", "controls", "t", "start", "token", "expires",
+        ];
+        $filtered = [];
+        foreach ($allowed as $name) {
+            if (!isset($parameters[$name]) || !is_string($parameters[$name])) {
+                continue;
+            }
+            $value = $parameters[$name];
+            if (strlen($value) <= 256 && preg_match("/^[A-Za-z0-9_.~-]*$/D", $value)) {
+                $filtered[$name] = $value;
+            }
+        }
+        return http_build_query($filtered, "", "&", PHP_QUERY_RFC3986);
+    }
+
 }
