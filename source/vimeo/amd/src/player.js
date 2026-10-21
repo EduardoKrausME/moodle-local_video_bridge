@@ -29,11 +29,16 @@ define(["jquery", "local_video_bridge/progress"], function ($, Progress) {
         }
         if (!apiPromise) {
             apiPromise = new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = () => resolve(window.Vimeo);
-                script.onerror = reject;
-                document.head.appendChild(script);
+                // The Vimeo UMD bundle registers as AMD when Moodle's RequireJS is present.
+                require([url], (Player) => {
+                    if (window.Vimeo && window.Vimeo.Player) {
+                        resolve(window.Vimeo);
+                    } else if (Player) {
+                        resolve({Player: Player});
+                    } else {
+                        reject(new Error("Vimeo Player API did not load"));
+                    }
+                }, reject);
             });
         }
         return apiPromise;
@@ -65,9 +70,11 @@ define(["jquery", "local_video_bridge/progress"], function ($, Progress) {
          */
         initialise() {
             return loadApi(this.config.vimeoplayerurl).then((Vimeo) => {
-                const options = {id: Number(this.config.vimeoid), responsive: true};
+                const options = {responsive: true};
                 if (this.config.vimeohash) {
-                    options.h = this.config.vimeohash;
+                    options.url = "https://vimeo.com/" + this.config.vimeoid + "/" + this.config.vimeohash;
+                } else {
+                    options.id = Number(this.config.vimeoid);
                 }
                 this.player = new Vimeo.Player('videoprogress-vimeo-player', options);
                 this.player.on('play', () => this.emit('play'));
