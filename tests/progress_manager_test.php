@@ -77,4 +77,34 @@ final class progress_manager_test extends advanced_testcase {
         $this->assertSame(0, manager::progress_length(0));
         $this->assertSame(0, manager::bucket_for_position(10, 0));
     }
+    /**
+     * A rendered media registration is scoped to its activity, source and session.
+     */
+    public function test_registered_media_rejects_untrusted_identity(): void {
+        global $SESSION;
+
+        $this->resetAfterTest();
+        $SESSION->local_video_bridge_media = [];
+        $hash = hash("sha256", "configured-video");
+
+        manager::register_media(123, "mod_page", 55, "youtube", $hash);
+        manager::assert_registered_media(123, "mod_page", 55, "youtube", $hash);
+
+        $this->expectException(\invalid_parameter_exception::class);
+        manager::assert_registered_media(123, "mod_page", 55, "vimeo", $hash);
+    }
+
+    /**
+     * Fictitious client-provided hashes must not create progress rows.
+     */
+    public function test_unregistered_media_is_rejected(): void {
+        global $SESSION;
+
+        $this->resetAfterTest();
+        $SESSION->local_video_bridge_media = [];
+
+        $this->expectException(\invalid_parameter_exception::class);
+        manager::assert_registered_media(123, "mod_page", 55, "youtube", str_repeat("a", 64));
+    }
+
 }
