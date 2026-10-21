@@ -27,8 +27,10 @@ namespace local_video_bridge\privacy;
 use context;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
+use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
 /**
@@ -36,7 +38,8 @@ use core_privacy\local\request\writer;
  */
 class provider implements
         \core_privacy\local\metadata\provider,
-        \core_privacy\local\request\plugin\provider {
+        \core_privacy\local\request\plugin\provider,
+        \core_privacy\local\request\core_userlist_provider {
 
     /**
      * Describes stored personal data.
@@ -256,4 +259,47 @@ class provider implements
             ]);
         }
     }
+    /**
+     * Lists all users with progress or session telemetry in the specified context.
+     *
+     * @param userlist $userlist Context-bound user list.
+     * @return void
+     */
+    public static function get_users_in_context(userlist $userlist): void {
+        $contextid = $userlist->get_context()->id;
+        $userlist->add_from_sql(
+            "SELECT DISTINCT userid FROM {local_video_bridge_progress} WHERE contextid = :contextid",
+            ["contextid" => $contextid]
+        );
+        $userlist->add_from_sql(
+            "SELECT DISTINCT userid FROM {local_video_bridge_session} WHERE contextid = :contextid",
+            ["contextid" => $contextid]
+        );
+    }
+
+    /**
+     * Deletes both kinds of personal data for an approved set of users in one context.
+     *
+     * @param approved_userlist $userlist Approved context and user IDs.
+     * @return void
+     */
+    public static function delete_data_for_users(approved_userlist $userlist): void {
+        global $DB;
+
+        $userids = $userlist->get_userids();
+        if (empty($userids)) {
+            return;
+        }
+
+        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, "bridgeuser");
+        $params = ["contextid" => $userlist->get_context()->id] + $inparams;
+        foreach (["local_video_bridge_progress", "local_video_bridge_session"] as $table) {
+            $DB->delete_records_select(
+                $table,
+                "contextid = :contextid AND userid " . $insql,
+                $params
+            );
+        }
+    }
+
 }
