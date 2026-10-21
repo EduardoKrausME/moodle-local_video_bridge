@@ -22,7 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__ . '/../../config.php');
+// sendBeacon cannot use core/ajax, but errors must retain the Moodle AJAX JSON contract.
+define("AJAX_SCRIPT", true);
+require_once(__DIR__ . "/../../config.php");
 
 use local_video_bridge\analytics;
 use local_video_bridge\progress\manager;
@@ -137,6 +139,6 @@ try {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'error' => $exception->getMessage(),
+        "error" => "progress_save_failed",
     ]);
 }
