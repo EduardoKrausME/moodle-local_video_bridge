@@ -113,6 +113,15 @@ final class save_progress extends external_api {
             throw new invalid_parameter_exception('Invalid media hash.');
         }
 
+        // Accept only media rendered by a trusted consumer in this Moodle session.
+        progress_manager::assert_registered_media(
+            $context->id,
+            $params["component"],
+            $params["itemid"],
+            $params["source"],
+            $params["mediahash"]
+        );
+
         $decodedbuckets = json_decode($params['buckets'], true);
         if (!is_array($decodedbuckets) || count($decodedbuckets) > progress_manager::MAX_BUCKETS) {
             throw new invalid_parameter_exception('Invalid progress bucket list.');
