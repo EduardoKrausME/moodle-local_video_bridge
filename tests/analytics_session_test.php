@@ -106,4 +106,38 @@ final class analytics_session_test extends advanced_testcase {
         $this->assertSame(42, $metrics->to_array()['uniqueWatchTime']);
     }
 
+    /**
+     * Repeated arbitrary session identifiers cannot expand the session table indefinitely.
+     */
+    public function test_new_session_id_limit_reuses_open_session(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+        $page = $this->getDataGenerator()->create_module("page", ["course" => $course->id]);
+        $cm = get_coursemodule_from_instance("page", $page->id, $course->id, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        $hash = hash("sha256", "session-limit-media");
+        $last = null;
+
+        for ($i = 0; $i < 60; $i++) {
+            $last = analytics::save_session(
+                $context, "mod_page", (int)$page->id, "html5", $hash, (int)$user->id,
+                ["sessionid" => "new-session-" . $i, "level" => analytics::LEVEL_BASIC]
+            );
+        }
+
+        $reused = analytics::save_session(
+            $context, "mod_page", (int)$page->id, "html5", $hash, (int)$user->id,
+            ["sessionid" => "new-session-over-limit", "level" => analytics::LEVEL_BASIC]
+        );
+        $this->assertSame((int)$last->id, (int)$reused->id);
+        $this->assertSame(60, $DB->count_records("local_video_bridge_session", [
+            "contextid" => $context->id,
+            "userid" => $user->id,
+            "mediahash" => $hash,
+        ]));
+    }
+
 }
