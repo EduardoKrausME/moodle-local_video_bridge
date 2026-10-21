@@ -65,6 +65,9 @@ try {
         throw new invalid_parameter_exception('Progress consumer does not match the module context.');
     }
 
+    // sendBeacon uses the same authenticated session as the player configuration.
+    manager::assert_registered_media($context->id, $component, $itemid, $source, $mediahash);
+
     $buckets = json_decode($rawbuckets, true);
     if (!is_array($buckets) || count($buckets) > manager::MAX_BUCKETS) {
         throw new invalid_parameter_exception('Invalid progress bucket list.');
