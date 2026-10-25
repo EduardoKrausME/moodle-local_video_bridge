@@ -49,11 +49,11 @@ final class source_manager_test extends \advanced_testcase {
             'url',
             'youtube',
             'vimeo',
-            'nextcloud',
             'drive',
             'pandavideo',
-            'ottflix',
             'embed',
+            'bunnystream',
+            'qencode',
         ] as $source) {
             self::assertArrayHasKey($source, $plugins);
             self::assertInstanceOf(plugin_base::class, $plugins[$source]);
