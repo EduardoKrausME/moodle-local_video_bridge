@@ -4,7 +4,7 @@ Video Bridge is the shared video infrastructure for Moodle video activities. It 
 
 ## Moodle activities using Video Bridge
 
-The following activity plugins use `local_video_bridge` for shared video playback, source adapters, progress tracking or analytics. Install Video Bridge and its required dependencies before installing or upgrading these activities:
+The following activity plugins use `local_video_bridge` for shared video playback, source adapters, progress tracking or analytics. The consuming activities are separate plugins with their own requirements:
 
 - [Video Progress (`mod_videoprogress`)](https://github.com/EduardoKrausME/moodle-mod_videoprogress)
 - [Video Summary (`mod_videosummary`)](https://github.com/EduardoKrausME/moodle-mod_videosummary)
@@ -16,7 +16,7 @@ The following activity plugins use `local_video_bridge` for shared video playbac
 - [Video Tracker Ultimate (`mod_videotrackerultimate`)](https://github.com/EduardoKrausME/moodle-mod_videotrackerultimate)
 - [Video Tracker Premium (`mod_videotrackerpremium`)](https://github.com/EduardoKrausME/moodle-mod_videotrackerpremium)
 
-Video Bridge requires Moodle 4.5 or later and currently declares `local_ai_bridge` as a dependency in `version.php`. The consuming plugins are separate packages; installing Video Bridge alone does not install them. See each activity's README for its integration and minimum Video Bridge version.
+Video Bridge requires Moodle 4.5 or later and currently declares `local_ai_bridge` as a dependency in `version.php`. The consuming plugins are separate packages. See each activity's README for its integration and minimum Video Bridge version.
 
 Bundled sources:
 
