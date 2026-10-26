@@ -58,9 +58,7 @@ Every AMD adapter still exposes the same safe calling surface: `play()`, `pause(
 
 HLS and Vimeo runtime libraries are shipped by Video Bridge, so a consumer never needs files from `mod_videoprogress`.
 
-
 Caption consumers use `local_video_bridge\caption\manager`. By default it expects `captionsource` and `captionconfig`, but consumers may map those aliases to their own schema. Caption providers return browser-ready tracks with `url`, `language`, `label` and `isdefault`.
-
 
 AI caption operations are extensible through the `videocaptiontool` subplugin type. The bundled tools use `local_ai_bridge` rather than calling AI vendors directly:
 
@@ -71,7 +69,6 @@ AI caption operations are extensible through the `videocaptiontool` subplugin ty
 
 Each tool has its own configurable AI Bridge purpose idnumber, so tenants may route each operation to different providers, models, roles, limits and credit costs.
 
-
 ## Shared viewing map and progress
 
 Every source that declares reliable `tracking` automatically receives the Video Bridge progress tracker. Consumer activities do not need their own progress table, AJAX service, percentage calculation or viewing-map JavaScript.
@@ -81,7 +78,6 @@ The tracker keeps watched buckets in browser memory, persists them at most once 
 Progress is stored per module context, consumer component, activity instance, media hash and user. Videos longer than 100 seconds use 100 normalized buckets; shorter videos use approximately one bucket per second. The server calculates the authoritative percentage from the merged map and never trusts a percentage supplied by the browser.
 
 `local_video_bridge\progress\manager` exposes the consolidated state for reports or activity logic, including current position, duration, watched percentage and normalized map.
-
 
 ## Telemetry and analytics API
 
@@ -107,7 +103,6 @@ Analytics consumers should use the public methods `local_video_bridge\analytics:
 
 `get_session_metrics()` exposes a normalized `reachedend` flag based on the explicit player `ended` event. Incremental consumers may page with `modifiedafter`, `modifiedafterid` and `limit`; the bridge keeps session modification cursors monotonic so a final beacon cannot disappear behind a same-second update. Collective coverage treats a normal `ended` event as completion rather than drop-off, while sessions closed elsewhere contribute to abandonment at their last reported position.
 
-
 ## Optional detailed analytics
 
 Consumers that need more than the lightweight viewing map can request `detailed` telemetry when calling `local_video_bridge\source\manager::get_player_config()`. Detailed telemetry is optional so ordinary video activities do not create unnecessary session data.
@@ -115,7 +110,6 @@ Consumers that need more than the lightweight viewing map can request `detailed`
 `local_video_bridge\analytics\manager` exposes provider-independent facts such as watched percentage, unique watched time, playback time, real session time, maximum and average playback rate, forward/backward seeks, largest forward seek, pause count, session count, end reached, watched ranges, continuous playback blocks and inactivity gaps.
 
 The analytics manager returns facts only. Completion policies, required segments, penalties and other pedagogical rules belong in the consumer activity.
-
 
 ## Multi-media consumers
 
@@ -149,7 +143,6 @@ user × media matrix with one query rather than issuing a query for every table 
 bridge remains the owner of viewing maps and normalized progress; consumer plugins only
 store their own media catalog and pedagogical/compliance rules.
 
-
 ## Generic timeline cues
 
 `local_video_bridge/timeline` is a semantic-free AMD engine for consumers that need timestamp cues. It registers cues against the normalized adapter, detects effective continuous playback, ignores forward discontinuities/seeks, prevents accidental duplicate triggers, exposes the current time and seek operation, and can render reusable timeline markers.
@@ -165,7 +158,6 @@ timeline.seekTo(42);
 ```
 
 For reports, `local_video_bridge\\progress\\manager::media_hash()` and `get_activity_progress()` expose the same normalized progress identity and aggregate records without consumers coupling themselves to the bridge table schema.
-
 
 ## Progress thresholds and consumer events
 
