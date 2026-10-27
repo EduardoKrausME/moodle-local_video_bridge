@@ -76,7 +76,7 @@ class manager {
 
         return [
             'enabled' => true,
-            'endpoint' => $CFG->wwwroot . '/local/video_bridge/progress.php',
+            'endpoint' => $CFG->wwwroot . '/lib/ajax/service.php?sesskey=' . sesskey() . '&info=local_video_bridge_save_progress',
             'ajaxmethod' => 'local_video_bridge_save_progress',
             'sesskey' => sesskey(),
             'contextid' => $context->id,
@@ -135,7 +135,8 @@ class manager {
 
         return [
             'enabled' => true,
-            'endpoint' => $CFG->wwwroot . '/local/video_bridge/progress.php',
+            'endpoint' => $CFG->wwwroot . '/lib/ajax/service.php?sesskey=' . sesskey() . '&info=local_video_bridge_save_progress',
+            'ajaxmethod' => 'local_video_bridge_save_progress',
             'sesskey' => sesskey(),
             'contextid' => $context->id,
             'component' => $consumer->get_component(),

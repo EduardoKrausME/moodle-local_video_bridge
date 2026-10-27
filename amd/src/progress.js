@@ -540,62 +540,33 @@ define(['core/templates', 'core/ajax'], function(Templates, Ajax) {
             }
 
             const snapshot = Array.from(this.pending);
-            const data = this.buildFormData(snapshot);
+            const form = this.buildFormData(snapshot);
+            const args = {};
+            form.forEach((value, key) => {
+                if (key !== 'sesskey') {
+                    args[key] = value;
+                }
+            });
+            const method = this.config.ajaxmethod || 'local_video_bridge_save_progress';
 
             if (finalFlush) {
-                if (navigator.sendBeacon && navigator.sendBeacon(this.config.endpoint, data)) {
+                // Moodle's AJAX service accepts JSON envelopes, including from sendBeacon.
+                const payload = JSON.stringify([{index: 0, methodname: method, args: args}]);
+                const body = new Blob([payload], {type: 'application/json'});
+                if (navigator.sendBeacon && navigator.sendBeacon(this.config.endpoint, body)) {
                     return;
                 }
                 fetch(this.config.endpoint, {
                     method: 'POST',
                     credentials: 'same-origin',
-                    body: data,
+                    body: body,
                     keepalive: true,
                 }).catch(() => {});
                 return;
             }
 
             this.lastSentAt = now;
-            if (this.config.ajaxmethod) {
-                const args = {};
-                data.forEach((value, key) => {
-                    if (key !== 'sesskey') {
-                        args[key] = value;
-                    }
-                });
-                Ajax.call([{
-                    methodname: this.config.ajaxmethod,
-                    args: args,
-                }])[0].then((result) => {
-                    if (!result || !result.success) {
-                        throw new Error('Unable to save Video Bridge progress.');
-                    }
-                    snapshot.forEach((bucket) => this.pending.delete(bucket));
-                    this.dirty = this.pending.size > 0;
-                    if (Array.isArray(result.map)) {
-                        result.map.forEach((bucket) => this.watched.add(Number(bucket)));
-                    }
-                    if (Number(result.duration || 0) > 0) {
-                        this.duration = Number(result.duration);
-                    }
-                    this.paint();
-                    return null;
-                }).catch(() => {
-                    this.dirty = true;
-                });
-                return;
-            }
-
-            fetch(this.config.endpoint, {
-                method: 'POST',
-                credentials: 'same-origin',
-                body: data,
-            }).then((response) => {
-                if (!response.ok) {
-                    throw new Error('Unable to save Video Bridge progress.');
-                }
-                return response.json();
-            }).then((result) => {
+            Ajax.call([{methodname: method, args: args}])[0].then((result) => {
                 if (!result || !result.success) {
                     throw new Error('Unable to save Video Bridge progress.');
                 }
