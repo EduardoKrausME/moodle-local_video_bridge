@@ -22,17 +22,26 @@
  */
 
 define(["jquery", "local_video_bridge/html5"], function ($, Html5Adapter) {
-    const loadScript = (url) => new Promise((resolve, reject) => {
-        if (window.Hls) {
-            resolve(window.Hls);
-            return;
+    let apiPromise;
+    const loadApi = (url) => {
+        if (window.Hls && typeof window.Hls.isSupported === 'function') {
+            return Promise.resolve(window.Hls);
         }
-        const script = document.createElement('script');
-        script.src = url;
-        script.onload = () => resolve(window.Hls);
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
+        if (!apiPromise) {
+            apiPromise = new Promise((resolve, reject) => {
+                // The hls.js UMD bundle registers anonymously with RequireJS on Moodle.
+                require([url], (module) => {
+                    const Hls = module && (module.default || module.Hls || module) || window.Hls;
+                    if (Hls && typeof Hls.isSupported === 'function') {
+                        resolve(Hls);
+                    } else {
+                        reject(new Error('HLS Player API did not load'));
+                    }
+                }, reject);
+            });
+        }
+        return apiPromise;
+    };
 
     /**
      * Extends the HTML5 adapter with native HLS detection and hls.js fallback loading.
@@ -48,7 +57,7 @@ define(["jquery", "local_video_bridge/html5"], function ($, Html5Adapter) {
                 this.video.src = this.config.url;
                 return super.initialise();
             }
-            return loadScript(this.config.hlsjsurl).then((Hls) => {
+            return loadApi(this.config.hlsjsurl).then((Hls) => {
                 if (!Hls || !Hls.isSupported()) {
                     throw new Error('HLS is not supported by this browser');
                 }
