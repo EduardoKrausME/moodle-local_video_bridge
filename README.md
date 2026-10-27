@@ -16,21 +16,21 @@ The following activity plugins use `local_video_bridge` for shared video playbac
 - [Video Tracker Ultimate (`mod_videotrackerultimate`)](https://github.com/EduardoKrausME/moodle-mod_videotrackerultimate)
 - [Video Tracker Premium (`mod_videotrackerpremium`)](https://github.com/EduardoKrausME/moodle-mod_videotrackerpremium)
 
-Video Bridge requires Moodle 4.5 or later and currently declares `local_ai_bridge` as a dependency in `version.php`. The consuming plugins are separate packages. See each activity's README for its integration and minimum Video Bridge version.
+Video Bridge requires **Moodle 4.5+** (2024100700) and **AI Bridge (`local_ai_bridge`) 1.2.3+** (2026102000). The consuming plugins are separate packages. See each activity's README for its integration and minimum Video Bridge version.
 
-Bundled sources:
+Maintained video sources:
 
 - protected Moodle upload;
 - direct HTML5/HLS URL;
 - YouTube;
 - Vimeo;
-- public Nextcloud shares;
 - Google Drive preview;
 - Panda Video;
 - Bunny Stream;
 - Qencode playback URLs;
-- OTTFlix;
 - generic/cooperative iframe embed.
+
+Legacy source adapters may remain in older installations or distributions for compatibility with existing activity records; they are not part of the actively documented provider list. Do not delete an installed adapter before migrating activities configured to use it.
 
 Caption providers are also extensible through the `videocaptionsource` subplugin type. The bundled upload provider stores protected WebVTT captions in Moodle, accepts VTT/SRT input and can expose multiple normalized tracks to any consumer.
 
@@ -78,7 +78,7 @@ Each tool has its own configurable AI Bridge purpose idnumber, so tenants may ro
 
 Every source that declares reliable `tracking` automatically receives the Video Bridge progress tracker. Consumer activities do not need their own progress table, AJAX service, percentage calculation or viewing-map JavaScript.
 
-The tracker keeps watched buckets in browser memory, persists them at most once every 60 seconds, and sends one final best-effort payload with `navigator.sendBeacon()` when the page is closed or navigated away from. Seeking never fills skipped ranges: only buckets reached by actual player progress events are marked.
+The tracker keeps watched buckets in browser memory, persists them at most once every 60 seconds, and sends one final best-effort payload with `navigator.sendBeacon()` when the page is closed or navigated away from. Both periodic saves and the final beacon now call the registered `local_video_bridge_save_progress` Moodle External Service, using `core/ajax` and `/lib/ajax/service.php` respectively. The historical `progress.php` endpoint is retained temporarily for clients with cached older JavaScript. Seeking never fills skipped ranges: only buckets reached by actual player progress events are marked.
 
 Progress is stored per module context, consumer component, activity instance, media hash and user. Videos longer than 100 seconds use 100 normalized buckets; shorter videos use approximately one bucket per second. The server calculates the authoritative percentage from the merged map and never trusts a percentage supplied by the browser.
 
