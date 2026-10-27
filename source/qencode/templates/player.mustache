@@ -18,12 +18,12 @@
     @template videoprogresssource_qencode/player
 }}
 <video class="videoprogress-player__video" data-region="html5-player" controls preload="metadata"
-       {{#player.poster}}poster="{{{player.poster}}}"{{/player.poster}}
+       {{#player.poster}}poster="{{player.poster}}"{{/player.poster}}
        {{#player.disabledownload}}controlslist="nodownload"{{/player.disabledownload}}
        {{#player.disablepip}}disablepictureinpicture{{/player.disablepip}}>
-    <source src="{{{player.url}}}">
+    <source src="{{player.url}}">
     {{#player.captions}}
-        <track kind="subtitles" src="{{{url}}}" srclang="{{{language}}}" label="{{{label}}}"
+        <track kind="subtitles" src="{{url}}" srclang="{{language}}" label="{{label}}"
                {{#isdefault}}default{{/isdefault}}>
     {{/player.captions}}
     {{#str}} browservideonotsupported, local_video_bridge {{/str}}
