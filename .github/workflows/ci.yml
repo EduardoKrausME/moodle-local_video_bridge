@@ -96,7 +96,7 @@ jobs:
         plugin: ./plugin
         # The upstream mustacheurl rule incorrectly rejects HTML-escaped href/src
         # attributes. Browsers decode &amp; in attributes back to '&' in URLs.
-        # Keep the other validation rules enabled while that rule is corrected.
+        # Ignore is supported by moodle-plugin-validate (02bc019); all other rules remain enabled.
         ignore: mustacheurl
 
     - name: Moodle Code Checker
