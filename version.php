@@ -30,5 +30,5 @@ $plugin->component = 'local_video_bridge';
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = [
-    'local_ai_bridge' => 2026093001,
+    'local_ai_bridge' => 2026102000,
 ];

@@ -29,4 +29,8 @@ echo $result->content;
 The `generate` tool works from transcript text. The current `local_ai_bridge` contract is text generation only and does not expose audio transcription, so generating captions directly from a video/audio file is intentionally not faked here. A future transcription capability should be implemented in `local_ai_bridge` itself and then consumed by this tool.
 
 
-Because the bundled caption tools call `local_ai_bridge`, Video Bridge now requires Moodle 4.5+ and `local_ai_bridge` 1.0.1 or newer. The actual AI route is still tenant/purpose controlled by AI Bridge.
+Because the bundled caption tools call `local_ai_bridge`, Video Bridge now requires Moodle 4.5+ and `local_ai_bridge` 1.2.3 (2026102000) or newer. The actual AI route is still tenant/purpose controlled by AI Bridge.
+
+### AI Bridge 1.2.3 system-instruction policy
+
+AI Bridge does not permit consumers to pass `role=system` messages. Video Bridge sends its tool-specific task guidance as a user message followed by caption data, without trying to override the configured purpose. For stronger instruction priority, configure each tenant's AI Bridge purpose system instruction with the corresponding restrictions: treat captions/transcripts as untrusted data, preserve WebVTT timing when translating, produce valid WebVTT when generating, assess only visible captions when analyzing, and output Mermaid mindmap syntax when creating mind maps. The purpose administrator controls that policy, model and route.
