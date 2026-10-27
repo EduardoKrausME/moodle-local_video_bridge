@@ -58,6 +58,11 @@ Every AMD adapter still exposes the same safe calling surface: `play()`, `pause(
 
 HLS and Vimeo runtime libraries are shipped by Video Bridge, so a consumer never needs files from `mod_videoprogress`.
 
+### Provider-hosted playback scripts
+
+YouTube loads the official IFrame API from `https://www.youtube.com/iframe_api`, and Bunny Stream loads its version-pinned Player.js integration from `https://assets.mediadelivery.net/playerjs/player-0.1.0.min.js`. These are intentional provider-hosted integrations, not locally bundled runtime dependencies. They execute in the Moodle page context, so administrators must trust these providers, review the site's Content Security Policy and outbound connectivity requirements, and monitor provider version/security changes. Do not blanket-allow third-party script hosts in CSP. Self-hosting an upstream script requires a separate licensing and compatibility review; copying vendor-managed player code is not automatically a security improvement.
+
+
 Caption consumers use `local_video_bridge\caption\manager`. By default it expects `captionsource` and `captionconfig`, but consumers may map those aliases to their own schema. Caption providers return browser-ready tracks with `url`, `language`, `label` and `isdefault`.
 
 AI caption operations are extensible through the `videocaptiontool` subplugin type. The bundled tools use `local_ai_bridge` rather than calling AI vendors directly:
