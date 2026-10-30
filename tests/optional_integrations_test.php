@@ -26,6 +26,7 @@ namespace local_video_bridge;
 
 use advanced_testcase;
 use local_video_bridge\captiontool\manager as captiontool_manager;
+use local_video_bridge\mcp\provider;
 
 /**
  * Optional integrations must not prevent normal Video Bridge operation.
@@ -56,7 +57,7 @@ final class optional_integrations_test extends advanced_testcase {
             $this->markTestSkipped('The optional local_mcp integration is not installed.');
         }
 
-        $provider = new \local_video_bridge\mcp\provider();
+        $provider = new provider();
         $readtools = array_map(
             static fn($tool): string => $tool->get_name(),
             $provider->get_read_tools()

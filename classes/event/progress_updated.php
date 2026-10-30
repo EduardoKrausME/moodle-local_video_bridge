@@ -24,10 +24,14 @@
 
 namespace local_video_bridge\event;
 
+use coding_exception;
+use core\event\base;
+use moodle_url;
+
 /**
  * Fired when authoritative watched percentage changes.
  */
-final class progress_updated extends \core\event\base {
+final class progress_updated extends base {
     /**
      * Initializes event metadata.
      *
@@ -61,10 +65,10 @@ final class progress_updated extends \core\event\base {
     /**
      * Returns the related course URL.
      *
-     * @return \moodle_url
+     * @return moodle_url
      */
-    public function get_url(): \moodle_url {
-        return new \moodle_url('/course/view.php', ['id' => $this->courseid]);
+    public function get_url(): moodle_url {
+        return new moodle_url('/course/view.php', ['id' => $this->courseid]);
     }
 
     /**
@@ -76,7 +80,7 @@ final class progress_updated extends \core\event\base {
         parent::validate_data();
         foreach (['component', 'itemid', 'mediahash', 'previouspercent', 'percent'] as $field) {
             if (!array_key_exists($field, $this->other)) {
-                throw new \coding_exception("progress_updated requires {$field}.");
+                throw new coding_exception("progress_updated requires {$field}.");
             }
         }
     }

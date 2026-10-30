@@ -28,6 +28,7 @@ use coding_exception;
 use context_module;
 use core_collator;
 use core_component;
+use local_video_bridge\analytics;
 use moodle_exception;
 use moodle_url;
 use local_video_bridge\caption\manager as caption_manager;
@@ -388,7 +389,7 @@ class manager {
     public function get_player_config(
         stdClass $activity,
         context_module $context,
-        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC
+        string $telemetrylevel = analytics::LEVEL_BASIC
     ): array {
         $record = $this->provider_record($activity);
         $source = clean_param((string)$record->videosource, PARAM_PLUGIN);
@@ -436,7 +437,7 @@ class manager {
         media_config $media,
         context_module $context,
         ?consumer $consumer = null,
-        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC,
+        string $telemetrylevel = analytics::LEVEL_BASIC,
         array $requiredcapabilities = []
     ): array {
         $source = $media->get_source();

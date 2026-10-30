@@ -25,6 +25,7 @@
 namespace local_video_bridge;
 
 use context_module;
+use dml_write_exception;
 use invalid_parameter_exception;
 use stdClass;
 
@@ -293,7 +294,7 @@ class analytics {
         $record = (object)($params + $values + ['timecreated' => $now]);
         try {
             $record->id = $DB->insert_record('local_video_bridge_session', $record);
-        } catch (\dml_write_exception $exception) {
+        } catch (dml_write_exception $exception) {
             $record = $DB->get_record('local_video_bridge_session', $params, '*', MUST_EXIST);
             foreach ($values as $field => $value) {
                 $record->{$field} = $value;

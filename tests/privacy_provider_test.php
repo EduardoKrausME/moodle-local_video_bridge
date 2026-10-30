@@ -24,17 +24,19 @@
 
 namespace local_video_bridge;
 
+use advanced_testcase;
 use context_module;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\userlist;
 use local_video_bridge\privacy\provider;
+use local_video_bridge\progress\manager;
 
 /**
  * Covers GDPR user discovery and selected-user erasure without cross-context deletion.
  *
  * @covers \local_video_bridge\privacy\provider
  */
-final class privacy_provider_test extends \advanced_testcase {
+final class privacy_provider_test extends advanced_testcase {
     /**
      * Only approved users and rows in the approved module context may be erased.
      */
@@ -56,7 +58,7 @@ final class privacy_provider_test extends \advanced_testcase {
         foreach ([[$context1, $first, $user1], [$context1, $first, $user2],
                      [$context2, $second, $user1]] as $entry) {
             [$context, $page, $user] = $entry;
-            \local_video_bridge\progress\manager::save(
+            manager::save(
                 $context->id, "mod_page", (int)$page->id, "html5", $hash,
                 (int)$user->id, 10, 100, [1]
             );

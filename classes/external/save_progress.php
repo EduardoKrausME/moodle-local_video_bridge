@@ -24,12 +24,15 @@
 
 namespace local_video_bridge\external;
 
+use context;
 use context_module;
 use core_external\external_api;
 use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use invalid_parameter_exception;
+use local_video_bridge\event\analytics_updated;
 use local_video_bridge\progress\manager as progress_manager;
 use local_video_bridge\telemetry\manager as telemetry_manager;
 
@@ -95,7 +98,7 @@ final class save_progress extends external_api {
             'telemetry' => $telemetry,
         ]);
 
-        $context = \context::instance_by_id($params['contextid'], MUST_EXIST);
+        $context = context::instance_by_id($params['contextid'], MUST_EXIST);
         if (!$context instanceof context_module) {
             throw new invalid_parameter_exception('Progress requires a module context.');
         }
@@ -169,7 +172,7 @@ final class save_progress extends external_api {
             );
         }
 
-        \local_video_bridge\event\analytics_updated::create([
+        analytics_updated::create([
             'objectid' => (int)$progress->id,
             'context' => $context,
             'relateduserid' => (int)$USER->id,
@@ -203,7 +206,7 @@ final class save_progress extends external_api {
             'currenttime' => new external_value(PARAM_INT, 'Authoritative current position'),
             'duration' => new external_value(PARAM_INT, 'Stored media duration'),
             'percent' => new external_value(PARAM_INT, 'Authoritative watched percentage'),
-            'map' => new \core_external\external_multiple_structure(
+            'map' => new external_multiple_structure(
                 new external_value(PARAM_INT, 'Watched bucket')
             ),
         ]);

@@ -24,6 +24,8 @@
 
 namespace local_video_bridge\analytics;
 
+use coding_exception;
+
 /**
  * Stable provider-independent metrics returned to Video Bridge consumers.
  *
@@ -96,7 +98,7 @@ final class metrics {
      *
      * @param string $name Legacy property name.
      * @return mixed Property value.
-     * @throws \coding_exception For unknown properties.
+     * @throws coding_exception For unknown properties.
      */
     public function __get(string $name): mixed {
         return match ($name) {
@@ -116,7 +118,7 @@ final class metrics {
             'largestForwardSeek' => $this->largestforwardseek,
             'continuousBlocks' => $this->continuousblocks,
             'inactivityGaps' => $this->inactivitygaps,
-            default => throw new \coding_exception('Unknown Video Bridge metrics property: ' . $name),
+            default => throw new coding_exception('Unknown Video Bridge metrics property: ' . $name),
         };
     }
 

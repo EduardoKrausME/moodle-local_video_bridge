@@ -373,7 +373,7 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
         ]);
 
         foreach ($candidates as $candidate) {
-            $expectedhash = \file_storage::get_pathname_hash(
+            $expectedhash = file_storage::get_pathname_hash(
                 $candidate->contextid,
                 "local_video_bridge",
                 "video",
@@ -387,7 +387,7 @@ function xmldb_local_video_bridge_upgrade(int $oldversion): bool {
 
             $oldfile = $fs->get_file_by_id($candidate->id);
             if (!$oldfile) {
-                throw new \moodle_exception("error", "error");
+                throw new moodle_exception("error", "error");
             }
             $target = [
                 "contextid" => $candidate->contextid,

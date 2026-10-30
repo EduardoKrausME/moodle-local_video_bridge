@@ -29,6 +29,7 @@ use context_course;
 use local_mcp\security\authenticated_identity;
 use local_mcp\write\tool\base_tool;
 use local_video_bridge\captiontool\manager as captiontool_manager;
+use moodle_exception;
 
 /**
  * AI processing is a WRITE action because it uses a potentially billable external service.
@@ -93,7 +94,7 @@ final class process_captions extends base_tool {
         $manager = new captiontool_manager();
         $tool = $manager->get_plugin((string)$arguments['tool']);
         if (!$tool->is_available()) {
-            throw new \moodle_exception('aibridgemissing', 'local_video_bridge');
+            throw new moodle_exception('aibridgemissing', 'local_video_bridge');
         }
         return [
             'tool' => $this->get_name(),

@@ -27,6 +27,7 @@ define("AJAX_SCRIPT", true);
 require_once(__DIR__ . "/../../config.php");
 
 use local_video_bridge\analytics;
+use local_video_bridge\event\analytics_updated;
 use local_video_bridge\progress\manager;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -116,7 +117,7 @@ try {
     }
 
 
-    $event = \local_video_bridge\event\analytics_updated::create([
+    $event = analytics_updated::create([
         'objectid' => (int)$progress->id,
         'context' => $context,
         'relateduserid' => (int)$USER->id,

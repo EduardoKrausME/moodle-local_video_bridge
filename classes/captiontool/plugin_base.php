@@ -24,6 +24,7 @@
 
 namespace local_video_bridge\captiontool;
 
+use local_ai_bridge\api;
 use moodle_exception;
 
 /**
@@ -143,7 +144,7 @@ abstract class plugin_base {
         if (!$this->is_available()) {
             throw new moodle_exception('aibridgemissing', 'local_video_bridge');
         }
-        return \local_ai_bridge\api::generate(
+        return api::generate(
             $this->get_purpose_idnumber(),
             $messages,
             $userid,

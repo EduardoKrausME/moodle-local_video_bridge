@@ -24,7 +24,14 @@
 
 namespace local_video_bridge\progress;
 
+use coding_exception;
 use context_module;
+use dml_write_exception;
+use invalid_parameter_exception;
+use local_video_bridge\analytics;
+use local_video_bridge\event\progress_threshold_reached;
+use local_video_bridge\event\progress_updated;
+use local_video_bridge\event\video_completed;
 use local_video_bridge\media\config as media_config;
 use stdClass;
 
@@ -51,19 +58,19 @@ class manager {
         context_module $context,
         string $source,
         string $sourceconfig = '',
-        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC
+        string $telemetrylevel = analytics::LEVEL_BASIC
     ): array {
         global $CFG, $USER;
 
-        $telemetrylevel = \local_video_bridge\analytics::normalise_level($telemetrylevel);
-        if (!isloggedin() || isguestuser() || $telemetrylevel === \local_video_bridge\analytics::LEVEL_OFF) {
+        $telemetrylevel = analytics::normalise_level($telemetrylevel);
+        if (!isloggedin() || isguestuser() || $telemetrylevel === analytics::LEVEL_OFF) {
             return ['enabled' => false, 'telemetrylevel' => $telemetrylevel];
         }
 
         $cm = get_coursemodule_from_id(null, $context->instanceid, 0, false, MUST_EXIST);
         $component = 'mod_' . $cm->modname;
         $itemid = (int)$cm->instance;
-        $mediahash = \local_video_bridge\analytics::media_hash($source, $sourceconfig);
+        $mediahash = analytics::media_hash($source, $sourceconfig);
         self::register_media($context->id, $component, $itemid, $source, $mediahash);
         $progress = self::get_or_create(
             $context->id,
@@ -107,12 +114,12 @@ class manager {
         context_module $context,
         consumer $consumer,
         media_config $media,
-        string $telemetrylevel = \local_video_bridge\analytics::LEVEL_BASIC
+        string $telemetrylevel = analytics::LEVEL_BASIC
     ): array {
         global $CFG, $USER;
 
-        $telemetrylevel = \local_video_bridge\analytics::normalise_level($telemetrylevel);
-        if (!isloggedin() || isguestuser() || $telemetrylevel === \local_video_bridge\analytics::LEVEL_OFF) {
+        $telemetrylevel = analytics::normalise_level($telemetrylevel);
+        if (!isloggedin() || isguestuser() || $telemetrylevel === analytics::LEVEL_OFF) {
             return ['enabled' => false, 'telemetrylevel' => $telemetrylevel];
         }
 
@@ -177,7 +184,7 @@ class manager {
         global $SESSION;
 
         if (!isset($SESSION) || !is_object($SESSION)) {
-            throw new \coding_exception("Video Bridge requires an active Moodle session.");
+            throw new coding_exception("Video Bridge requires an active Moodle session.");
         }
 
         if (!isset($SESSION->local_video_bridge_media) || !is_array($SESSION->local_video_bridge_media)) {
@@ -215,13 +222,13 @@ class manager {
         global $SESSION;
 
         if (!preg_match("/^[a-f0-9]{64}$/D", $mediahash)) {
-            throw new \invalid_parameter_exception("Invalid Video Bridge media identity.");
+            throw new invalid_parameter_exception("Invalid Video Bridge media identity.");
         }
         $key = hash("sha256", $contextid . "|" . $component . "|" . $itemid . "|" . $mediahash);
         $entry = $SESSION->local_video_bridge_media[$key] ?? null;
         if (!is_array($entry) || (int)($entry["expires"] ?? 0) < time() ||
                 !hash_equals((string)($entry["source"] ?? ""), $source)) {
-            throw new \invalid_parameter_exception("Unregistered Video Bridge media identity.");
+            throw new invalid_parameter_exception("Unregistered Video Bridge media identity.");
         }
     }
 
@@ -775,7 +782,7 @@ class manager {
             return (int)$DB->insert_record('local_video_bridge_threshold', (object)($params + [
                 'timecreated' => time(),
             ]));
-        } catch (\dml_write_exception $exception) {
+        } catch (dml_write_exception $exception) {
             return (int)$DB->get_field(
                 'local_video_bridge_threshold',
                 'id',
@@ -865,7 +872,7 @@ class manager {
             'percent' => $currentpercent,
         ];
 
-        \local_video_bridge\event\progress_updated::create([
+        progress_updated::create([
             'objectid' => (int)$progress->id,
             'context' => $context,
             'relateduserid' => (int)$progress->userid,
@@ -881,7 +888,7 @@ class manager {
         foreach ($thresholds as $registered) {
             $threshold = (int)$registered->threshold;
             if ($previouspercent < $threshold && $currentpercent >= $threshold) {
-                \local_video_bridge\event\progress_threshold_reached::create([
+                progress_threshold_reached::create([
                     'objectid' => (int)$progress->id,
                     'context' => $context,
                     'relateduserid' => (int)$progress->userid,
@@ -894,7 +901,7 @@ class manager {
         }
 
         if ($previouspercent < 100 && $currentpercent >= 100) {
-            \local_video_bridge\event\video_completed::create([
+            video_completed::create([
                 'objectid' => (int)$progress->id,
                 'context' => $context,
                 'relateduserid' => (int)$progress->userid,
@@ -951,7 +958,7 @@ class manager {
         try {
             $record->id = $DB->insert_record('local_video_bridge_progress', $record);
             return $record;
-        } catch (\dml_write_exception $exception) {
+        } catch (dml_write_exception $exception) {
             // A parallel tab may have created the unique row first.
             return $DB->get_record('local_video_bridge_progress', $params, '*', MUST_EXIST);
         }

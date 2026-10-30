@@ -24,8 +24,10 @@
 
 namespace local_video_bridge;
 
+use advanced_testcase;
 use local_video_bridge\source\manager;
 use local_video_bridge\source\plugin_base;
+use videoprogresssource_youtube\plugin;
 
 /**
  * Verifies source discovery and normalization independently from consumer activities.
@@ -35,7 +37,7 @@ use local_video_bridge\source\plugin_base;
  * @covers \\videoprogresssource_youtube\\plugin
  * @uses \\local_video_bridge\\source\\plugin_base
  */
-final class source_manager_test extends \advanced_testcase {
+final class source_manager_test extends advanced_testcase {
     /**
      * Confirms that all bundled sources are owned and discovered by Video Bridge.
      *
@@ -122,7 +124,7 @@ final class source_manager_test extends \advanced_testcase {
      * @return void
      */
     public function test_youtube_source_normalizes_supported_url(): void {
-        $plugin = new \videoprogresssource_youtube\plugin();
+        $plugin = new plugin();
 
         self::assertSame(
             ['id' => 'AbCdEf12345'],

@@ -24,13 +24,16 @@
 
 namespace local_video_bridge;
 
+use advanced_testcase;
+use videoprogresssource_vimeo\plugin;
+
 /**
  * Covers untrusted embed URLs and unlisted Vimeo media configuration.
  *
  * @covers \videoprogresssource_bunnystream\plugin
  * @covers \videoprogresssource_vimeo\plugin
  */
-final class source_security_test extends \advanced_testcase {
+final class source_security_test extends advanced_testcase {
     /**
      * Unsafe URL parameters cannot survive normalization of a Bunny Stream embed.
      */
@@ -58,7 +61,7 @@ final class source_security_test extends \advanced_testcase {
      * The hash in a Vimeo unlisted URL remains part of provider configuration.
      */
     public function test_vimeo_unlisted_url_is_preserved(): void {
-        $plugin = new \videoprogresssource_vimeo\plugin();
+        $plugin = new plugin();
         $this->assertSame(
             ["id" => "123456789", "hash" => "AbCd1234"],
             $plugin->build_config((object)[

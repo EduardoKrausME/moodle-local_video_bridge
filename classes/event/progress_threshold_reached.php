@@ -24,10 +24,14 @@
 
 namespace local_video_bridge\event;
 
+use coding_exception;
+use core\event\base;
+use moodle_url;
+
 /**
  * Fired only when a registered watched-percentage threshold is crossed.
  */
-final class progress_threshold_reached extends \core\event\base {
+final class progress_threshold_reached extends base {
     /**
      * Initializes event metadata.
      *
@@ -60,10 +64,10 @@ final class progress_threshold_reached extends \core\event\base {
     /**
      * Returns the related course URL.
      *
-     * @return \moodle_url
+     * @return moodle_url
      */
-    public function get_url(): \moodle_url {
-        return new \moodle_url('/course/view.php', ['id' => $this->courseid]);
+    public function get_url(): moodle_url {
+        return new moodle_url('/course/view.php', ['id' => $this->courseid]);
     }
 
     /**
@@ -75,7 +79,7 @@ final class progress_threshold_reached extends \core\event\base {
         parent::validate_data();
         foreach (['component', 'itemid', 'mediahash', 'threshold', 'percent'] as $field) {
             if (!array_key_exists($field, $this->other)) {
-                throw new \coding_exception("progress_threshold_reached requires {$field}.");
+                throw new coding_exception("progress_threshold_reached requires {$field}.");
             }
         }
     }

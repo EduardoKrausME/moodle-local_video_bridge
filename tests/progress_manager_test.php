@@ -25,6 +25,7 @@
 namespace local_video_bridge;
 
 use advanced_testcase;
+use invalid_parameter_exception;
 use local_video_bridge\progress\manager;
 
 /**
@@ -90,7 +91,7 @@ final class progress_manager_test extends advanced_testcase {
         manager::register_media(123, "mod_page", 55, "youtube", $hash);
         manager::assert_registered_media(123, "mod_page", 55, "youtube", $hash);
 
-        $this->expectException(\invalid_parameter_exception::class);
+        $this->expectException(invalid_parameter_exception::class);
         manager::assert_registered_media(123, "mod_page", 55, "vimeo", $hash);
     }
 
@@ -103,7 +104,7 @@ final class progress_manager_test extends advanced_testcase {
         $this->resetAfterTest();
         $SESSION->local_video_bridge_media = [];
 
-        $this->expectException(\invalid_parameter_exception::class);
+        $this->expectException(invalid_parameter_exception::class);
         manager::assert_registered_media(123, "mod_page", 55, "youtube", str_repeat("a", 64));
     }
 

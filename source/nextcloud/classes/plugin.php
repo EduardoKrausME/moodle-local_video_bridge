@@ -26,6 +26,7 @@ namespace videoprogresssource_nextcloud;
 
 use coding_exception;
 use context_module;
+use curl;
 use local_video_bridge\source\plugin_base;
 use moodle_exception;
 use MoodleQuickForm;
@@ -254,7 +255,7 @@ class plugin extends plugin_base {
      * @return array Status, content type, and Accept-Ranges values.
      */
     private function request_probe(string $downloadurl, bool $head): array {
-        $curl = new \curl();
+        $curl = new curl();
         $options = [
             "CURLOPT_CONNECTTIMEOUT" => 10,
             "CURLOPT_TIMEOUT" => 20,

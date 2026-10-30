@@ -24,10 +24,12 @@
 
 namespace videocaptiontool_generate\privacy;
 
+use core_privacy\local\metadata\null_provider;
+
 /**
  * Privacy provider for this subplugin.
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements null_provider {
     /**
      * Returns the privacy provider reason string.
      * @return string Return value.

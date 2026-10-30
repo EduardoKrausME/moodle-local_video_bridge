@@ -29,6 +29,7 @@ use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\contextlist;
+use core_privacy\local\request\core_userlist_provider;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
@@ -39,7 +40,7 @@ use core_privacy\local\request\writer;
 class provider implements
         \core_privacy\local\metadata\provider,
         \core_privacy\local\request\plugin\provider,
-        \core_privacy\local\request\core_userlist_provider {
+        core_userlist_provider {
 
     /**
      * Describes stored personal data.
@@ -293,7 +294,7 @@ class provider implements
             return;
         }
 
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, "bridgeuser");
+        [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, "bridgeuser");
         $params = ["contextid" => $userlist->get_context()->id] + $inparams;
         foreach (["local_video_bridge_progress", "local_video_bridge_session"] as $table) {
             $DB->delete_records_select(

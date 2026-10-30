@@ -24,10 +24,12 @@
 
 namespace videoprogresssource_embed\privacy;
 
+use core_privacy\local\metadata\null_provider;
+
 /**
  * Declares that iframe configuration stores no personal data.
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements null_provider {
     /**
      * Returns the Privacy API explanation.
      *

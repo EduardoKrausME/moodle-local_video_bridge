@@ -27,6 +27,7 @@ namespace local_video_bridge\telemetry;
 use context_module;
 use local_video_bridge\analytics;
 use local_video_bridge\analytics\manager as analytics_manager;
+use local_video_bridge\analytics\metrics;
 use stdClass;
 
 /**
@@ -95,7 +96,7 @@ final class manager {
      * @param string $mediahash Stable media hash.
      * @param int $userid User id.
      * @param array $filters Optional filters.
-     * @return \local_video_bridge\analytics\metrics
+     * @return metrics
      */
     public static function get_metrics(
         int $contextid,
@@ -104,7 +105,7 @@ final class manager {
         string $mediahash,
         int $userid,
         array $filters = []
-    ): \local_video_bridge\analytics\metrics {
+    ): metrics {
         return analytics_manager::get_user_metrics($contextid, $component, $itemid, $mediahash, $userid, $filters);
     }
 

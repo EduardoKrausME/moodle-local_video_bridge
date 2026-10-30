@@ -25,6 +25,7 @@
 namespace local_video_bridge\media;
 
 use coding_exception;
+use local_video_bridge\analytics;
 use stdClass;
 
 /**
@@ -153,7 +154,7 @@ final class config {
      */
     public function get_mediahash(): string {
         if ($this->mediaid === 0) {
-            return \local_video_bridge\analytics::media_hash($this->source, $this->sourceconfig);
+            return analytics::media_hash($this->source, $this->sourceconfig);
         }
 
         return hash(

@@ -24,10 +24,14 @@
 
 namespace local_video_bridge\event;
 
+use coding_exception;
+use core\event\base;
+use moodle_url;
+
 /**
  * Fired after normalized progress/session analytics are stored.
  */
-final class analytics_updated extends \core\event\base {
+final class analytics_updated extends base {
     /**
      * Initializes event metadata.
      *
@@ -62,10 +66,10 @@ final class analytics_updated extends \core\event\base {
     /**
      * Returns a course URL for the event.
      *
-     * @return \moodle_url
+     * @return moodle_url
      */
-    public function get_url(): \moodle_url {
-        return new \moodle_url('/course/view.php', ['id' => $this->courseid]);
+    public function get_url(): moodle_url {
+        return new moodle_url('/course/view.php', ['id' => $this->courseid]);
     }
 
     /**
@@ -76,7 +80,7 @@ final class analytics_updated extends \core\event\base {
     protected function validate_data(): void {
         parent::validate_data();
         if (!isset($this->other['component'], $this->other['itemid'], $this->other['mediahash'])) {
-            throw new \coding_exception('analytics_updated requires component, itemid and mediahash.');
+            throw new coding_exception('analytics_updated requires component, itemid and mediahash.');
         }
     }
 }

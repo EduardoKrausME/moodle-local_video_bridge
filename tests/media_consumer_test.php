@@ -25,6 +25,7 @@
 namespace local_video_bridge;
 
 use advanced_testcase;
+use context_system;
 use local_video_bridge\media\config as media_config;
 use local_video_bridge\progress\manager as progress_manager;
 
@@ -57,7 +58,7 @@ final class media_consumer_test extends advanced_testcase {
         global $DB;
 
         $this->resetAfterTest();
-        $contextid = \context_system::instance()->id;
+        $contextid = context_system::instance()->id;
         $now = time();
         $hash1 = hash('sha256', 'one');
         $hash2 = hash('sha256', 'two');
@@ -106,7 +107,7 @@ final class media_consumer_test extends advanced_testcase {
         global $DB;
 
         $this->resetAfterTest();
-        $contextid = \context_system::instance()->id;
+        $contextid = context_system::instance()->id;
         $now = time();
         $hash1 = hash('sha256', 'delete-one');
         $hash2 = hash('sha256', 'keep-two');

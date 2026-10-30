@@ -24,10 +24,12 @@
 
 namespace videocaptiontool_translate\privacy;
 
+use core_privacy\local\metadata\null_provider;
+
 /**
  * Privacy provider for the caption translation tool.
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements null_provider {
     /**
      * Returns the privacy provider reason string.
      *
