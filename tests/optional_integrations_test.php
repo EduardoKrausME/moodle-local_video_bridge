@@ -66,6 +66,65 @@ final class optional_integrations_test extends advanced_testcase {
         $this->assertContains('video_bridge_get_my_progress', $readtools);
 
         $writetools = $provider->get_write_tools();
-        $this->assertCount(class_exists('\\local_ai_bridge\\api') ? 1 : 0, $writetools);
+        $writenames = array_map(
+            static fn($tool): string => $tool->get_name(),
+            $writetools
+        );
+        if (!class_exists('\\local_ai_bridge\\api')) {
+            $this->assertSame([], $writenames);
+            return;
+        }
+
+        // Every installed captiontool has its own MCP action, including future subplugins.
+        $this->assertContains('video_bridge_process_captions', $writenames);
+        $plugins = (new captiontool_manager())->get_plugins();
+        foreach ($plugins as $name => $plugin) {
+            if (!$plugin->is_available()) {
+                continue;
+            }
+            $expected = 'video_bridge_caption_' . $name;
+            $this->assertContains($expected, $writenames);
+        }
+        $this->assertCount(count($plugins) + 1, $writenames);
+        $this->assertCount(count(array_unique($writenames)), $writenames);
+
+        foreach (['generate', 'translate', 'analyze', 'mindmap'] as $name) {
+            if (!isset($plugins[$name])) {
+                continue;
+            }
+            $this->assertContains('video_bridge_caption_' . $name, $writenames);
+        }
+        // Confirm that the visible preview never echoes submitted caption text.
+        $identity = new \local_mcp\security\authenticated_identity(2, 'test', []);
+        foreach ($writetools as $tool) {
+            if ($tool->get_name() !== 'video_bridge_caption_generate') {
+                continue;
+            }
+            $preview = $tool->preview([
+                'courseid' => SITEID,
+                'input' => 'Private caption content for preview test.',
+            ], $identity);
+            $this->assertSame('video_bridge_caption_generate', $preview['tool']);
+            $this->assertSame(
+                hash('sha256', 'Private caption content for preview test.'),
+                $preview['input_sha256']
+            );
+            $this->assertStringNotContainsString(
+                'Private caption content for preview test.',
+                json_encode($preview)
+            );
+        }
+
+        if (isset($plugins['translate'])) {
+            foreach ($writetools as $tool) {
+                if ($tool->get_name() !== 'video_bridge_caption_translate') {
+                    continue;
+                }
+                $schema = $tool->get_input_schema();
+                $this->assertContains('options', $schema['required']);
+                $this->assertContains('targetlanguage', $schema['properties']['options']['required']);
+                $this->assertArrayNotHasKey('tool', $schema['properties']);
+            }
+        }
     }
 }

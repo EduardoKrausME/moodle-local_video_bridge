@@ -4,6 +4,7 @@
 
 - Made AI Bridge optional for all four bundled caption-processing subplugins while retaining their dependency on Video Bridge. AI operations fail cleanly when unavailable, and forms omit unavailable AI tools.
 - Added optional MCP provider discovery with READ tools for installed sources, captions and the authenticated learner's viewing progress, plus a confirmable AI caption-processing WRITE tool.
+- Registered a separate MCP WRITE tool for every installed captiontool (generate, translate, analyze, mindmap and future subplugins), preserving the generic caption tool for existing clients.
 - Kept `local_mcp` optional and exposed no credentials or other learners' progress.
 
 

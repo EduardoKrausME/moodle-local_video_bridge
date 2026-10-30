@@ -28,6 +28,8 @@ use local_mcp\extension\read_provider_interface;
 use local_mcp\extension\write_provider_interface;
 use local_video_bridge\mcp\read\get_my_progress;
 use local_video_bridge\mcp\read\list_providers;
+use local_video_bridge\captiontool\manager as captiontool_manager;
+use local_video_bridge\mcp\write\captiontool;
 use local_video_bridge\mcp\write\process_captions;
 
 /**
@@ -57,6 +59,14 @@ final class provider implements read_provider_interface, write_provider_interfac
         if (!class_exists('\\local_ai_bridge\\api')) {
             return [];
         }
-        return [new process_captions()];
+        // Retain the generic tool for existing MCP clients, while publishing every
+        // installed captiontool under its own discoverable MCP tool name.
+        $tools = [new process_captions()];
+        foreach ((new captiontool_manager())->get_plugins() as $name => $plugin) {
+            if ($plugin->is_available()) {
+                $tools[] = new captiontool($name, $plugin);
+            }
+        }
+        return $tools;
     }
 }

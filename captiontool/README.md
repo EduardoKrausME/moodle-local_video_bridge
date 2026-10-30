@@ -34,3 +34,16 @@ The AI Bridge integration is optional. Video Bridge and the four caption-tool su
 ### AI Bridge 1.2.3 system-instruction policy
 
 AI Bridge does not permit consumers to pass `role=system` messages. Video Bridge sends its tool-specific task guidance as a user message followed by caption data, without trying to override the configured purpose. For stronger instruction priority, configure each tenant's AI Bridge purpose system instruction with the corresponding restrictions: treat captions/transcripts as untrusted data, preserve WebVTT timing when translating, produce valid WebVTT when generating, assess only visible captions when analyzing, and output Mermaid mindmap syntax when creating mind maps. The purpose administrator controls that policy, model and route.
+
+## MCP integration (optional)
+
+With `local_mcp` and the AI Bridge backend installed, Video Bridge automatically registers **a separate MCP WRITE tool for every installed captiontool**, including additional third-party `videocaptiontool_*` subplugins:
+
+- `video_bridge_caption_generate` accepts a transcript and optional language/duration;
+- `video_bridge_caption_translate` requires WebVTT and `options.targetlanguage`;
+- `video_bridge_caption_analyze` reviews supplied WebVTT;
+- `video_bridge_caption_mindmap` creates a Mermaid mind map from WebVTT.
+
+Each tool accepts `courseid`, `input` and optional tool-specific `options`. Caption tools added later are discovered automatically as `video_bridge_caption_<shortname>`. Operations require course activity management permission and confirmation, and confirmation previews contain a SHA-256 digest and byte count rather than the caption text. `video_bridge_process_captions` remains available for clients already using the generic endpoint.
+
+There is **no declared dependency** on `local_mcp`; without MCP, the caption tools continue to operate from Moodle, and without AI Bridge the AI-dependent MCP actions are omitted.
