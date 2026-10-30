@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Confirmable AI caption processing through the existing caption tool API.
@@ -35,7 +35,11 @@ use moodle_exception;
  * AI processing is a WRITE action because it uses a potentially billable external service.
  */
 final class process_captions extends base_tool {
-    /** @return string */
+    /**
+     * Return the generic caption processing tool name.
+     *
+     * @return string
+     */
     public function get_name(): string {
         return 'video_bridge_process_captions';
     }
@@ -47,7 +51,8 @@ final class process_captions extends base_tool {
 
     /** @return string */
     public function get_description(): string {
-        return 'Generate, translate, analyze or create a mindmap from caption text using optional AI Bridge; requires confirmation and may incur AI usage charges.';
+        return 'Generate, translate, analyze or create a mindmap from caption text using optional AI Bridge; ' .
+            'requires confirmation and may incur AI usage charges.';
     }
 
     /** @return string */

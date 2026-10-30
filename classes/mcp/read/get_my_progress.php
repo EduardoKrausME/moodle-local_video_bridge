@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Authenticated learner's own Video Bridge progress.
@@ -34,7 +34,11 @@ use local_mcp\security\authenticated_identity;
  * Read provider-independent progress in a visible course activity.
  */
 final class get_my_progress extends base_tool {
-    /** @return string */
+    /**
+     * Return the learner progress tool name.
+     *
+     * @return string
+     */
     public function get_name(): string {
         return 'video_bridge_get_my_progress';
     }

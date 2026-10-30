@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * MCP discovery of Video Bridge subplugins.
@@ -36,7 +36,11 @@ use local_video_bridge\source\manager as source_manager;
  * List video, caption and AI processing providers without disclosing their configurations.
  */
 final class list_providers extends base_tool {
-    /** @return string */
+    /**
+     * Return the provider discovery tool name.
+     *
+     * @return string
+     */
     public function get_name(): string {
         return 'video_bridge_list_providers';
     }
