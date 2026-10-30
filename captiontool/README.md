@@ -29,7 +29,7 @@ echo $result->content;
 The `generate` tool works from transcript text. The current `local_ai_bridge` contract is text generation only and does not expose audio transcription, so generating captions directly from a video/audio file is intentionally not faked here. A future transcription capability should be implemented in `local_ai_bridge` itself and then consumed by this tool.
 
 
-Because the bundled caption tools call `local_ai_bridge`, Video Bridge now requires Moodle 4.5+ and `local_ai_bridge` 1.2.3 (2026102000) or newer. The actual AI route is still tenant/purpose controlled by AI Bridge.
+The AI Bridge integration is optional. Video Bridge and the four caption-tool subplugins install and run independently of `local_ai_bridge`; AI-based execution is available only when `local_ai_bridge` 1.2.3+ (2026102000) is installed. When it is absent, the AI tools remain discoverable but are marked unavailable and omitted from selectable tool options. The actual AI route remains tenant/purpose controlled by AI Bridge.
 
 ### AI Bridge 1.2.3 system-instruction policy
 

@@ -31,5 +31,4 @@ $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '1.0.0';
 $plugin->dependencies = [
     'local_video_bridge' => 2026100512,
-    'local_ai_bridge' => 2026093001,
 ];

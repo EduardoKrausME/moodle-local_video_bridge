@@ -94,7 +94,9 @@ class manager {
     public function get_options(): array {
         $options = [];
         foreach ($this->get_plugins() as $name => $plugin) {
-            $options[$name] = $plugin->get_name();
+            if ($plugin->is_available()) {
+                $options[$name] = $plugin->get_name();
+            }
         }
         return $options;
     }
@@ -113,6 +115,7 @@ class manager {
                 'inputformat' => $plugin->get_input_format(),
                 'outputformat' => $plugin->get_output_format(),
                 'purpose' => $plugin->get_purpose_idnumber(),
+                'available' => $plugin->is_available(),
             ];
         }
         return $tools;
@@ -128,6 +131,10 @@ class manager {
      * @return result Return value.
      */
     public function execute(string $name, string $input, array $options = [], ?int $userid = null): result {
-        return $this->get_plugin($name)->execute($input, $options, $userid);
+        $plugin = $this->get_plugin($name);
+        if (!$plugin->is_available()) {
+            throw new moodle_exception('aibridgemissing', 'local_video_bridge');
+        }
+        return $plugin->execute($input, $options, $userid);
     }
 }

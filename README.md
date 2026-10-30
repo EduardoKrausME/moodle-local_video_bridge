@@ -16,7 +16,7 @@ The following activity plugins use `local_video_bridge` for shared video playbac
 - [Video Tracker Ultimate (`mod_videotrackerultimate`)](https://github.com/EduardoKrausME/moodle-mod_videotrackerultimate)
 - [Video Tracker Premium (`mod_videotrackerpremium`)](https://github.com/EduardoKrausME/moodle-mod_videotrackerpremium)
 
-Video Bridge requires **Moodle 4.5+** (2024100700) and **AI Bridge (`local_ai_bridge`) 1.2.3+** (2026102000). The consuming plugins are separate packages. See each activity's README for its integration and minimum Video Bridge version.
+Video Bridge requires **Moodle 4.5+** (2024100700). `local_ai_bridge` 1.2.3+ is optional and needed only to run AI caption tools. Without it, video playback, progress, analytics and caption uploads continue to work, while AI caption execution is unavailable. The consuming plugins are separate packages.
 
 Maintained video sources:
 
@@ -175,3 +175,9 @@ Video Bridge emits public Moodle events after authoritative server-side progress
 - `local_video_bridge\event\video_completed` when progress first reaches 100%.
 
 Threshold registration contains only consumer identifiers, media hash and percentage. Operational policies such as reminders, deadlines or compliance remain the responsibility of consumer plugins.
+
+### Optional Moodle MCP integration
+
+If `local_mcp` is installed, Video Bridge is discovered automatically through `classes/mcp/provider.php`, with no hard dependency on MCP. READ tools `video_bridge_list_providers` and `video_bridge_get_my_progress` expose the installed video sources, caption providers/tools and the authenticated learner's own activity progress (subject to Moodle course/module visibility and capabilities). This includes all installed source subplugins and consumer activities using the shared progress storage. When AI Bridge is installed, the confirmable WRITE tool `video_bridge_process_captions` can run any available caption tool (generate, translate, analyze or mindmap) for users with course activity management permission. It shows a content hash and size in previews instead of repeating the supplied caption text. No source credentials, private configuration or other learners' records are exposed.
+
+The integration works without either `local_mcp` or `local_ai_bridge` installed; install or remove those plugins without changing Video Bridge dependencies. Refresh MCP tool discovery after changing installed plugins.

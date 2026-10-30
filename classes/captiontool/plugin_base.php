@@ -106,6 +106,15 @@ abstract class plugin_base {
     }
 
     /**
+     * Whether the optional AI Bridge service is available.
+     *
+     * @return bool
+     */
+    final public function is_available(): bool {
+        return class_exists('\\local_ai_bridge\\api');
+    }
+
+    /**
      * Validates and normalizes tool input.
      *
      * @param string $input Caption input.
@@ -131,7 +140,7 @@ abstract class plugin_base {
      * @return object Return value.
      */
     final protected function generate(array|string $messages, ?int $userid = null, array $options = []): object {
-        if (!class_exists('\\local_ai_bridge\\api')) {
+        if (!$this->is_available()) {
             throw new moodle_exception('aibridgemissing', 'local_video_bridge');
         }
         return \local_ai_bridge\api::generate(

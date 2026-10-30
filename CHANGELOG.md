@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Made AI Bridge optional for all four bundled caption-processing subplugins while retaining their dependency on Video Bridge. AI operations fail cleanly when unavailable, and forms omit unavailable AI tools.
+- Added optional MCP provider discovery with READ tools for installed sources, captions and the authenticated learner's viewing progress, plus a confirmable AI caption-processing WRITE tool.
+- Kept `local_mcp` optional and exposed no credentials or other learners' progress.
+
+
 This changelog covers only the two latest **published** releases of `local_video_bridge`, verified on October 24, 2026. Each entry summarizes the changes from its immediately preceding published Git tag. Changes to files in the comparisons, including workflow files, are historical release changes; creating this changelog does not modify them.
 
 ## [1.9.4] - 2026-10-21
