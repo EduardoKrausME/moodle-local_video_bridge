@@ -44,23 +44,39 @@ final class process_captions extends base_tool {
         return 'video_bridge_process_captions';
     }
 
-    /** @return string */
+    /**
+     * Return the generic caption processing tool title.
+     *
+     * @return string
+     */
     public function get_title(): string {
         return 'Video Bridge: process captions with AI';
     }
 
-    /** @return string */
+    /**
+     * Describe supported AI caption operations and confirmation requirements.
+     *
+     * @return string
+     */
     public function get_description(): string {
         return 'Generate, translate, analyze or create a mindmap from caption text using optional AI Bridge; ' .
             'requires confirmation and may incur AI usage charges.';
     }
 
-    /** @return string */
+    /**
+     * Return the capability required to process captions.
+     *
+     * @return string
+     */
     public function get_required_capability(): string {
         return 'moodle/course:manageactivities';
     }
 
-    /** @return array */
+    /**
+     * Define the accepted arguments for the generic caption processing tool.
+     *
+     * @return array
+     */
     public function get_input_schema(): array {
         return $this->object_schema([
             'courseid' => ['type' => 'integer', 'minimum' => 1],
@@ -81,6 +97,8 @@ final class process_captions extends base_tool {
     }
 
     /**
+     * Resolve the course context in which captions will be processed.
+     *
      * @param array $arguments
      * @return context
      */
@@ -113,6 +131,8 @@ final class process_captions extends base_tool {
     }
 
     /**
+     * Process captions with the selected subplugin and return its result.
+     *
      * @param array $arguments
      * @param authenticated_identity $identity
      * @return array

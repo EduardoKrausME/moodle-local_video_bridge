@@ -45,22 +45,38 @@ final class list_providers extends base_tool {
         return 'video_bridge_list_providers';
     }
 
-    /** @return string */
+    /**
+     * Return the video provider discovery tool title.
+     *
+     * @return string
+     */
     public function get_title(): string {
         return 'Video Bridge: list providers';
     }
 
-    /** @return string */
+    /**
+     * Describe the available provider discovery operation.
+     *
+     * @return string
+     */
     public function get_description(): string {
         return 'List installed video sources, caption sources and available AI caption tools for a course.';
     }
 
-    /** @return string */
+    /**
+     * Return the capability required to discover providers.
+     *
+     * @return string
+     */
     public function get_required_capability(): string {
         return 'moodle/course:view';
     }
 
-    /** @return array */
+    /**
+     * Define the course identifier used to list available providers.
+     *
+     * @return array
+     */
     public function get_input_schema(): array {
         return $this->object_schema([
             'courseid' => ['type' => 'integer', 'minimum' => 1],
@@ -68,6 +84,8 @@ final class list_providers extends base_tool {
     }
 
     /**
+     * Resolve the course context used for provider discovery.
+     *
      * @param array $arguments
      * @return context
      */
@@ -76,6 +94,8 @@ final class list_providers extends base_tool {
     }
 
     /**
+     * List available video sources, caption sources and processing tools.
+     *
      * @param array $arguments
      * @param authenticated_identity $identity
      * @return array

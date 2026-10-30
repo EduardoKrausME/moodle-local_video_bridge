@@ -43,22 +43,38 @@ final class get_my_progress extends base_tool {
         return 'video_bridge_get_my_progress';
     }
 
-    /** @return string */
+    /**
+     * Return the learner viewing progress tool title.
+     *
+     * @return string
+     */
     public function get_title(): string {
         return 'Video Bridge: my viewing progress';
     }
 
-    /** @return string */
+    /**
+     * Describe access to the authenticated learner's viewing progress.
+     *
+     * @return string
+     */
     public function get_description(): string {
         return 'Read only the authenticated learner\'s own video progress in a visible activity, across all video sources.';
     }
 
-    /** @return string */
+    /**
+     * Return the capability required to view learner progress.
+     *
+     * @return string
+     */
     public function get_required_capability(): string {
         return 'moodle/course:view';
     }
 
-    /** @return array */
+    /**
+     * Define the course module identifier used to query learner progress.
+     *
+     * @return array
+     */
     public function get_input_schema(): array {
         return $this->object_schema([
             'cmid' => ['type' => 'integer', 'minimum' => 1],
@@ -66,6 +82,8 @@ final class get_my_progress extends base_tool {
     }
 
     /**
+     * Resolve the activity context containing viewing progress.
+     *
      * @param array $arguments
      * @return context
      */
@@ -74,6 +92,8 @@ final class get_my_progress extends base_tool {
     }
 
     /**
+     * Read the authenticated learner's visible video progress records.
+     *
      * @param array $arguments
      * @param authenticated_identity $identity
      * @return array

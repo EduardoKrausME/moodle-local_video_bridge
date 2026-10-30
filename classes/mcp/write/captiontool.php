@@ -41,6 +41,8 @@ final class captiontool extends base_tool {
     private plugin_base $plugin;
 
     /**
+     * Initialise a dedicated MCP operation for the caption processing subplugin.
+     *
      * @param string $name Subplugin short name.
      * @param plugin_base $plugin The discovered caption processing plugin.
      */
@@ -50,6 +52,8 @@ final class captiontool extends base_tool {
     }
 
     /**
+     * Return the unique MCP tool identifier for this caption processor.
+     *
      * @return string
      */
     public function get_name(): string {
@@ -57,6 +61,8 @@ final class captiontool extends base_tool {
     }
 
     /**
+     * Return the caption processing tool title.
+     *
      * @return string
      */
     public function get_title(): string {
@@ -64,6 +70,8 @@ final class captiontool extends base_tool {
     }
 
     /**
+     * Describe the caption processing tool and its AI usage requirements.
+     *
      * @return string
      */
     public function get_description(): string {
@@ -74,6 +82,8 @@ final class captiontool extends base_tool {
     }
 
     /**
+     * Return the capability required to process captions.
+     *
      * @return string
      */
     public function get_required_capability(): string {
@@ -139,6 +149,8 @@ final class captiontool extends base_tool {
     }
 
     /**
+     * Resolve the course context associated with the requested operation.
+     *
      * @param array $arguments
      * @return context
      */
@@ -160,6 +172,8 @@ final class captiontool extends base_tool {
     }
 
     /**
+     * Execute the selected caption processing subplugin with the supplied arguments.
+     *
      * @param array $arguments
      * @param authenticated_identity $identity
      * @return array
