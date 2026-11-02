@@ -10,6 +10,24 @@
 
 This changelog covers only the two latest **published** releases of `local_video_bridge`, verified on October 24, 2026. Each entry summarizes the changes from its immediately preceding published Git tag. Changes to files in the comparisons, including workflow files, are historical release changes; creating this changelog does not modify them.
 
+## 1.10.1 - 2026-10-30
+
+- Made AI Bridge optional for bundled caption-processing tools while keeping their Video Bridge dependency.
+- Added MCP discovery and tools for installed video sources, learner progress and confirmed caption processing, including individual caption-tool integrations.
+- Updated privacy providers, analytics and progress integration code and added optional-integration regression tests.
+
+**Full comparison:** [1.10.0...1.10.1](https://github.com/EduardoKrausME/moodle-local_video_bridge/compare/1.10.0...1.10.1)
+
+## 1.10.0 - 2026-10-30
+
+- Corrected bundled source discovery and Bunny Stream player URL rendering and restored the Nextcloud and OTTFlix source adapters.
+- Improved caption-tool compatibility with AI Bridge 1.2.3.
+- Escaped player and administration Mustache attributes and loaded HLS.js through RequireJS with declared third-party libraries.
+- Moved playback progress and unload beacons to Moodle External Services.
+- Adjusted source-map packaging, dependency documentation and related CI checks.
+
+**Full comparison:** [1.9.4...1.10.0](https://github.com/EduardoKrausME/moodle-local_video_bridge/compare/1.9.4...1.10.0)
+
 ## [1.9.4] - 2026-10-21
 
 ### Fixed
