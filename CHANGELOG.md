@@ -10,6 +10,14 @@
 
 This changelog covers only the two latest **published** releases of `local_video_bridge`, verified on October 24, 2026. Each entry summarizes the changes from its immediately preceding published Git tag. Changes to files in the comparisons, including workflow files, are historical release changes; creating this changelog does not modify them.
 
+## 1.10.2 - 2026-11-21
+
+- Exposed installed caption tools as dedicated optional MCP tools and updated the MCP provider registry.
+- Extended optional integration tests, improved tool documentation and refreshed built HLS and progress assets.
+- Added a security reporting policy and adjusted CI checks.
+
+**Comparison:** [1.10.1...1.10.2](https://github.com/EduardoKrausME/moodle-local_video_bridge/compare/1.10.1...1.10.2)
+
 ## 1.10.1 - 2026-10-30
 
 - Made AI Bridge optional for bundled caption-processing tools while keeping their Video Bridge dependency.
